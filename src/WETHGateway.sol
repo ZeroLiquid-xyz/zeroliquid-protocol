@@ -52,7 +52,7 @@ contract WETHGateway is IWETHGateway, Ownable {
         if (amount != msg.value) {
             revert IllegalArgument("Invalid deposit amount");
         }
-        WETH.deposit{value: msg.value}();
+        WETH.deposit{ value: msg.value }();
         IZeroLiquid(zeroliquid).depositUnderlying(yieldToken, amount, recipient, minimumAmountOut);
     }
 
@@ -78,7 +78,7 @@ contract WETHGateway is IWETHGateway, Ownable {
         uint256 amount = WETH.balanceOf(address(this));
         WETH.withdraw(amount);
 
-        (bool success,) = recipient.call{value: amount}(new bytes(0));
+        (bool success,) = recipient.call{ value: amount }(new bytes(0));
         if (!success) {
             revert IllegalState("Unsuccessful withdrawal");
         }

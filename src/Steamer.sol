@@ -214,7 +214,7 @@ contract Steamer is ISteamer, Initializable, ReentrancyGuardUpgradeable, AccessC
     function deposit(uint256 amount, address owner) external override nonReentrant {
         _onlyWhitelisted();
         _updateAccount(
-            UpdateAccountParams({owner: owner, unexchangedDelta: SafeCast.toInt256(amount), exchangedDelta: 0})
+            UpdateAccountParams({ owner: owner, unexchangedDelta: SafeCast.toInt256(amount), exchangedDelta: 0 })
         );
         TokenUtils.safeTransferFrom(syntheticToken, msg.sender, address(this), amount);
         emit Deposit(msg.sender, owner, amount);
@@ -224,7 +224,7 @@ contract Steamer is ISteamer, Initializable, ReentrancyGuardUpgradeable, AccessC
     function withdraw(uint256 amount, address recipient) external override nonReentrant {
         _onlyWhitelisted();
         _updateAccount(
-            UpdateAccountParams({owner: msg.sender, unexchangedDelta: -SafeCast.toInt256(amount), exchangedDelta: 0})
+            UpdateAccountParams({ owner: msg.sender, unexchangedDelta: -SafeCast.toInt256(amount), exchangedDelta: 0 })
         );
         TokenUtils.safeTransfer(syntheticToken, recipient, amount);
         emit Withdraw(msg.sender, recipient, amount);
@@ -259,7 +259,7 @@ contract Steamer is ISteamer, Initializable, ReentrancyGuardUpgradeable, AccessC
         Tick.Info storage current = ticks.current();
 
         ExchangeCache memory cache =
-            ExchangeCache({totalUnexchanged: totalUnexchanged, satisfiedTick: satisfiedTick, ticksHead: ticks.head});
+            ExchangeCache({ totalUnexchanged: totalUnexchanged, satisfiedTick: satisfiedTick, ticksHead: ticks.head });
 
         ExchangeState memory state = ExchangeState({
             examineTick: cache.ticksHead,
