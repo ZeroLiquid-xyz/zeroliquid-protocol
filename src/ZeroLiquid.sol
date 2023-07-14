@@ -12,7 +12,6 @@ import "./interfaces/IZeroLiquid.sol";
 import "./interfaces/IERC20TokenReceiver.sol";
 import "./interfaces/ITokenAdapter.sol";
 import "./interfaces/IZeroLiquidToken.sol";
-import "./interfaces/IWhitelist.sol";
 import "./interfaces/IRewardCollector.sol";
 
 import "./libraries/SafeCast.sol";
@@ -80,9 +79,6 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
 
     /// @inheritdoc IZeroLiquidState
     address public override protocolFeeReceiver;
-
-    /// @inheritdoc IZeroLiquidState
-    address public override whitelist;
 
     /// @dev A linear growth function that limits the amount of debt-token minted.
     Limiters.LinearGrowthLimiter private _mintingLimiter;
@@ -237,7 +233,6 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
         minimumCollateralization = params.minimumCollateralization;
         protocolFee = params.protocolFee;
         protocolFeeReceiver = params.protocolFeeReceiver;
-        whitelist = params.whitelist;
 
         _mintingLimiter = Limiters.createLinearGrowthLimiter(
             params.mintingLimitMaximum, params.mintingLimitBlocks, params.mintingLimitMinimum
@@ -517,20 +512,17 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
 
     /// @inheritdoc IZeroLiquidActions
     function approveMint(address spender, uint256 amount) external override {
-        _onlyWhitelisted();
         _approveMint(msg.sender, spender, amount);
     }
 
     /// @inheritdoc IZeroLiquidActions
     function approveWithdraw(address spender, address yieldToken, uint256 shares) external override {
-        _onlyWhitelisted();
         _checkSupportedYieldToken(yieldToken);
         _approveWithdraw(msg.sender, spender, yieldToken, shares);
     }
 
     /// @inheritdoc IZeroLiquidActions
     function poke(address owner) external override lock {
-        _onlyWhitelisted();
         _preemptivelyHarvestDeposited(owner);
         _distributeUnlockedCreditDeposited(owner);
         _poke(owner);
@@ -538,7 +530,6 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
 
     /// @inheritdoc IZeroLiquidActions
     function deposit(address yieldToken, uint256 amount, address recipient) external override lock returns (uint256) {
-        _onlyWhitelisted();
         _checkArgument(recipient != address(0));
         _checkSupportedYieldToken(yieldToken);
 
@@ -563,7 +554,6 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
         lock
         returns (uint256)
     {
-        _onlyWhitelisted();
         _checkArgument(recipient != address(0));
         _checkSupportedYieldToken(yieldToken);
 
@@ -576,7 +566,6 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
 
     /// @inheritdoc IZeroLiquidActions
     function withdraw(address yieldToken, uint256 shares, address recipient) external override lock returns (uint256) {
-        _onlyWhitelisted();
         _checkArgument(recipient != address(0));
         _checkSupportedYieldToken(yieldToken);
 
@@ -601,7 +590,6 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
         lock
         returns (uint256)
     {
-        _onlyWhitelisted();
         _checkArgument(recipient != address(0));
         _checkSupportedYieldToken(yieldToken);
 
@@ -630,7 +618,6 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
         lock
         returns (uint256)
     {
-        _onlyWhitelisted();
         _checkArgument(recipient != address(0));
         _checkSupportedYieldToken(yieldToken);
         _checkLoss(yieldToken);
@@ -653,7 +640,6 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
         lock
         returns (uint256)
     {
-        _onlyWhitelisted();
         _checkArgument(recipient != address(0));
         _checkSupportedYieldToken(yieldToken);
         _checkLoss(yieldToken);
@@ -666,7 +652,6 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
 
     /// @inheritdoc IZeroLiquidActions
     function mint(uint256 amount, address recipient) external override lock {
-        _onlyWhitelisted();
         _checkArgument(amount > 0);
         _checkArgument(recipient != address(0));
 
@@ -676,7 +661,6 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
 
     /// @inheritdoc IZeroLiquidActions
     function mintFrom(address owner, uint256 amount, address recipient) external override lock {
-        _onlyWhitelisted();
         _checkArgument(amount > 0);
         _checkArgument(recipient != address(0));
 
@@ -690,8 +674,6 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
 
     /// @inheritdoc IZeroLiquidActions
     function burn(uint256 amount, address recipient) external override lock returns (uint256) {
-        _onlyWhitelisted();
-
         _checkArgument(amount > 0);
         _checkArgument(recipient != address(0));
 
@@ -742,8 +724,6 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
         lock
         returns (uint256)
     {
-        _onlyWhitelisted();
-
         _checkArgument(amount > 0);
         _checkArgument(recipient != address(0));
 
@@ -812,8 +792,6 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
         lock
         returns (uint256)
     {
-        _onlyWhitelisted();
-
         _checkArgument(shares > 0);
 
         YieldTokenParams storage yieldTokenParams = _yieldTokens[yieldToken];
@@ -892,7 +870,6 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
 
     /// @inheritdoc IZeroLiquidActions
     function donate(address yieldToken, uint256 amount) external override lock {
-        _onlyWhitelisted();
         _checkArgument(amount > 0);
 
         // Distribute any unlocked credit so that the accrued weight is up to date.
@@ -1710,23 +1687,6 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
     /// @return The normalized amount.
     function normalizeDebtTokensToUnderlying(address underlyingToken, uint256 amount) public view returns (uint256) {
         return amount / _underlyingTokens[underlyingToken].conversionFactor;
-    }
-
-    /// @dev Checks the whitelist for msg.sender.
-    ///
-    /// Reverts if msg.sender is not in the whitelist.
-    function _onlyWhitelisted() internal view {
-        // Check if the message sender is an EOA. In the future, this potentially may break. It is important that
-        // functions
-        // which rely on the whitelist not be explicitly vulnerable in the situation where this no longer holds true.
-        if (tx.origin == msg.sender) {
-            return;
-        }
-
-        // // Only check the whitelist for calls from contracts.
-        // if (!IWhitelist(whitelist).isWhitelisted(msg.sender)) {
-        //     revert Unauthorized();
-        // }
     }
 
     /// @dev Checks an expression and reverts with an {IllegalArgument} error if the expression is {false}.
