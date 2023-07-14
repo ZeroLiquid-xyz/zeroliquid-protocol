@@ -16,7 +16,6 @@ import { IWETH9 } from "./../../src/interfaces/external/IWETH9.sol";
 import { IStableSwap2Pool } from "./../../src/interfaces/external/curve/IStableSwap2Pool.sol";
 import { IStETH } from "./../../src/interfaces/external/lido/IStETH.sol";
 import { IWstETH } from "./../../src/interfaces/external/lido/IWstETH.sol";
-import { IWhitelist } from "./../../src/interfaces/IWhitelist.sol";
 import { ITokenAdapter } from "./../../src/interfaces/ITokenAdapter.sol";
 import { IZeroLiquidAdminActions } from "./../../src/interfaces/zeroliquid/IZeroLiquidAdminActions.sol";
 import { IZeroLiquidToken } from "./../../src/interfaces/IZeroLiquidToken.sol";
@@ -44,7 +43,6 @@ contract ZeroLiquidScript is Script {
     IWETH9 constant weth = IWETH9(0x8dF8C7506708BE301340B25fC4d928F7829F68E1);
     IStableSwap2Pool constant curvePool = IStableSwap2Pool(0x8566168D2C970EA21c46b9BB3dA8BCDAF7f9b0c3);
 
-    address constant whitelistETHAddress = 0x28E59622537DC8131199F14a7a2FD17DF09D33d0;
     IZeroLiquidToken constant zeroliquidtoken = IZeroLiquidToken(0x947d01482466729756eA55FD0825011A94B039A1);
 
     ISteamerBuffer constant steamerBuffer = ISteamerBuffer(0x049C3e15E1E465b026ADE3dA5Be68ef6F94aC705);
@@ -106,35 +104,7 @@ contract ZeroLiquidScript is Script {
         // console.log("Price ==> %s", unshETHAdapter.price());
         // console.logInt(oracleEthUsd.latestAnswer());
 
-        // SEND USING OWNER OF WHITELIST
-        // IWhitelist(whitelistETHAddress).add(user_s);
-        // IWhitelist(whitelistETHAddress).add(user_m);
-        // IWhitelist(whitelistETHAddress).add(user_3);
-        // IWhitelist(whitelistETHAddress).add(user_m);
-
         // console.log("minimumCollateralization ==> %s", zeroliquid.minimumCollateralization());
-
-        // IWhitelist(whitelistETHAddress).add(0xcfa6e893C77d3DE0524dC3b9d08E50f929C82Cc4);
-        // IWhitelist(whitelistETHAddress).add(0x7732607aF2fB2d914024Df024Ba74483cb365309);
-        // IWhitelist(whitelistETHAddress).add(0x397F8D6e9B59081cE5C0151273167478Ee27336C);
-        // IWhitelist(whitelistETHAddress).add(0x2C9878C61683984494E871B4270fF7485a7A22cf);
-        // IWhitelist(whitelistETHAddress).add(0x85d1a4372D48F5Eb07d691aE95ce8F5A77377e47);
-        // IWhitelist(whitelistETHAddress).add(0x4e3aA6092cD50DdaFcB3e091990EDE029F18653B);
-        // IWhitelist(whitelistETHAddress).add(0xf5453201961228642d613c28071b23ED90ad0d2F);
-        // IWhitelist(whitelistETHAddress).add(0xFdD075A8487ad8bD223651162Fd624e44ACDD866);
-        // IWhitelist(whitelistETHAddress).add(0x0Be6Bf75c8BE677a8735B23d6D1b8e626FB26D5d);
-        // IWhitelist(whitelistETHAddress).add(0x3c792A9e6f2207cAB19EA43968dCfb60cBf4BA82);
-        // IWhitelist(whitelistETHAddress).add(0x410b15b52d0E97b8a59E52b60D52BBB95702f13e);
-        // IWhitelist(whitelistETHAddress).add(0xfB80B7d705F545f07E0f931C744b40f67aEa3FA5);
-        // IWhitelist(whitelistETHAddress).add(0xB109e15Bb4f808e8CB64aad7d1e4588E0A1f4608);
-        // IWhitelist(whitelistETHAddress).add(0xF0B614D84129ad118F8F02ab0cFD1e67689bb5c1);
-        // IWhitelist(whitelistETHAddress).add(0x7FC1BDA90EE1A1ccE69EAB0df89624b4310392F2);
-        // IWhitelist(whitelistETHAddress).add(0x95C2ec97903c993EFBe4630F1535282A12fEAd98);
-        // IWhitelist(whitelistETHAddress).add(0x4A25B66e079cEF57b83977bA64A04038Ac36D1c0);
-        // IWhitelist(whitelistETHAddress).add(0x6803E61d8ffBc11C59112801D0F41aD8e2cC41ec);
-        // IWhitelist(whitelistETHAddress).add(0x17ba99189e1A82bE6A73Bfcbe97B129607e06cc2);
-        // IWhitelist(whitelistETHAddress).add(0xbfEcA4bF544BE74b6ed3E8f56f4cdEa278dBe538);
-        // IWhitelist(whitelistETHAddress).add(0xf625A092253fA2A4712B215Aeb1Ff6EAE2Cbe9B4);
 
         // SafeERC20.safeApprove(address(weth), address(zeroliquid), 1e18);
 

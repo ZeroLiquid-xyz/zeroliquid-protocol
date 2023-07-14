@@ -61,11 +61,6 @@ interface ISteamer {
     /// @return The underlying token.
     function underlyingToken() external view returns (address);
 
-    /// @notice Gets the address of the whitelist contract.
-    ///
-    /// @return whitelist The address of the whitelist contract.
-    function whitelist() external view returns (address whitelist);
-
     /// @dev Gets the unexchanged balance of an account.
     ///
     /// @param owner The address of the account owner.

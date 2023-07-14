@@ -14,15 +14,11 @@ import { IWETH9 } from "./../../src/interfaces/external/IWETH9.sol";
 import { IStableSwap2Pool } from "./../../src/interfaces/external/curve/IStableSwap2Pool.sol";
 import { IStETH } from "./../../src/interfaces/external/lido/IStETH.sol";
 import { IWstETH } from "./../../src/interfaces/external/lido/IWstETH.sol";
-import { IWhitelist } from "./../../src/interfaces/IWhitelist.sol";
 
 import { SafeERC20 } from "./../../src/libraries/SafeERC20.sol";
 
 contract Deployment is Script {
     uint256 constant BPS = 10_000;
-    // address constant admin = 0xbbfA751823F04c509346d14E3ec1182405ce2Dc4;
-    address constant whitelistETHAddress = 0x28E59622537DC8131199F14a7a2FD17DF09D33d0;
-
     IZeroLiquid constant zeroliquid = IZeroLiquid(0xAe482AaBB145c7492fDCaE7FAebdf3519B91a55a);
     IChainlinkOracle constant oracleStethUsd = IChainlinkOracle(0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e);
     IChainlinkOracle constant oracleEthUsd = IChainlinkOracle(0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e);
@@ -49,10 +45,6 @@ contract Deployment is Script {
             stEthPoolIndex:  1,
             referral:        address(0)
         }));
-
-        // zeroliquid.setTokenAdapter(address(wstETH), address(adapter));
-        // IWhitelist(whitelistETHAddress).add(address(this));
-        // zeroliquid.setMaximumExpectedValue(address(wstETH), 1_000_000_000e18);
 
         vm.stopBroadcast();
     }

@@ -26,8 +26,6 @@ interface IZeroLiquidAdminActions {
         uint256 mintingLimitMaximum;
         // The number of blocks that it takes for the minting limit to be refreshed.
         uint256 mintingLimitBlocks;
-        // The address of the whitelist.
-        address whitelist;
     }
 
     /// @notice Configuration parameters for an underlying token.

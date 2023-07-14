@@ -9,8 +9,6 @@ import { AccessControlUpgradeable } from
 
 import "./base/Errors.sol";
 
-import "./interfaces/IWhitelist.sol";
-
 import "./interfaces/steamer/ISteamer.sol";
 import "./interfaces/steamer/ISteamerBuffer.sol";
 
@@ -134,24 +132,13 @@ contract Steamer is ISteamer, Initializable, ReentrancyGuardUpgradeable, AccessC
     /// @dev the source of the exchanged collateral
     address public buffer;
 
-    /// @dev The address of the external whitelist contract.
-    address public override whitelist;
-
     /// @dev The amount of decimal places needed to normalize collateral to debtToken
     uint256 public override conversionFactor;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() initializer { }
 
-    function initialize(
-        address _syntheticToken,
-        address _underlyingToken,
-        address _buffer,
-        address _whitelist
-    )
-        external
-        initializer
-    {
+    function initialize(address _syntheticToken, address _underlyingToken, address _buffer) external initializer {
         _setupRole(ADMIN, msg.sender);
         _setRoleAdmin(ADMIN, ADMIN);
         _setRoleAdmin(SENTINEL, ADMIN);
@@ -166,7 +153,6 @@ contract Steamer is ISteamer, Initializable, ReentrancyGuardUpgradeable, AccessC
         ticks.next();
 
         isPaused = false;
-        whitelist = _whitelist;
     }
 
     /// @dev A modifier which checks if caller is an zeroliquid.
@@ -212,7 +198,6 @@ contract Steamer is ISteamer, Initializable, ReentrancyGuardUpgradeable, AccessC
 
     /// @inheritdoc ISteamer
     function deposit(uint256 amount, address owner) external override nonReentrant {
-        _onlyWhitelisted();
         _updateAccount(
             UpdateAccountParams({ owner: owner, unexchangedDelta: SafeCast.toInt256(amount), exchangedDelta: 0 })
         );
@@ -222,7 +207,6 @@ contract Steamer is ISteamer, Initializable, ReentrancyGuardUpgradeable, AccessC
 
     /// @inheritdoc ISteamer
     function withdraw(uint256 amount, address recipient) external override nonReentrant {
-        _onlyWhitelisted();
         _updateAccount(
             UpdateAccountParams({ owner: msg.sender, unexchangedDelta: -SafeCast.toInt256(amount), exchangedDelta: 0 })
         );
@@ -232,7 +216,6 @@ contract Steamer is ISteamer, Initializable, ReentrancyGuardUpgradeable, AccessC
 
     /// @inheritdoc ISteamer
     function claim(uint256 amount, address recipient) external override nonReentrant {
-        _onlyWhitelisted();
         _updateAccount(
             UpdateAccountParams({
                 owner: msg.sender,
@@ -503,21 +486,6 @@ contract Steamer is ISteamer, Initializable, ReentrancyGuardUpgradeable, AccessC
 
         if (cache.occupiedTick != cache.currentTick) {
             account.occupiedTick = cache.currentTick;
-        }
-    }
-
-    /// @dev Checks the whitelist for msg.sender.
-    ///
-    /// @notice Reverts if msg.sender is not in the whitelist.
-    function _onlyWhitelisted() internal view {
-        // Check if the message sender is an EOA. In the future, this potentially may break. It is important that
-        // functions which rely on the whitelist not be explicitly vulnerable in the situation where this no longer
-        // holds true.
-        if (tx.origin != msg.sender) {
-            // Only check the whitelist for calls from contracts.
-            if (!IWhitelist(whitelist).isWhitelisted(msg.sender)) {
-                revert Unauthorized();
-            }
         }
     }
 

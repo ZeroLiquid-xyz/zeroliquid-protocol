@@ -13,7 +13,6 @@ import { ZeroLiquid } from "./../../src/ZeroLiquid.sol";
 contract Deployment is Script {
     address constant admin = 0x3f5E68DEae10e1Ce34A8Df42F1E2FD2f6B731B91;
     address constant proxyAdmin = 0x250F69e781c728DC5C461a9C1616337BF40A6E0A;
-    address constant whitelistETHAddress = 0x28E59622537DC8131199F14a7a2FD17DF09D33d0;
     IZeroLiquidToken constant zeroliquidtoken = IZeroLiquidToken(0x947d01482466729756eA55FD0825011A94B039A1);
     ISteamerBuffer constant steamerBuffer = ISteamerBuffer(0x049C3e15E1E465b026ADE3dA5Be68ef6F94aC705);
 
@@ -37,8 +36,7 @@ contract Deployment is Script {
             protocolFeeReceiver: admin,
             mintingLimitMinimum: 1,
             mintingLimitMaximum: uint256(type(uint160).max),
-            mintingLimitBlocks: 300,
-            whitelist: whitelistETHAddress
+            mintingLimitBlocks: 300
         });
 
         bytes memory zeroliquidParams = abi.encodeWithSelector(ZeroLiquid.initialize.selector, initializationParams);
