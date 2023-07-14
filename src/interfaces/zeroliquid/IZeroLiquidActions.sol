@@ -7,7 +7,6 @@ pragma solidity >=0.5.0;
 interface IZeroLiquidActions {
     /// @notice Approve `spender` to mint `amount` debt tokens.
     ///
-    /// **_NOTE:_** This function is WHITELISTED.
     ///
     /// @param spender The address that will be approved to mint.
     /// @param amount  The amount of tokens that `spender` will be allowed to mint.
@@ -15,7 +14,6 @@ interface IZeroLiquidActions {
 
     /// @notice Approve `spender` to withdraw `amount` shares of `yieldToken`.
     ///
-    /// @notice **_NOTE:_** This function is WHITELISTED.
     ///
     /// @param spender    The address that will be approved to withdraw.
     /// @param yieldToken The address of the yield token that `spender` will be allowed to withdraw.
@@ -39,7 +37,6 @@ interface IZeroLiquidActions {
     ///
     /// @notice Emits a {Deposit} event.
     ///
-    /// @notice **_NOTE:_** This function is WHITELISTED.
     ///
     /// @notice **_NOTE:_** When depositing, the `ZeroLiquid` contract must have **allowance()** to spend funds on
     /// behalf of **msg.sender** for at least **amount** of the **yieldToken** being deposited.  This can be done via
@@ -70,7 +67,6 @@ interface IZeroLiquidActions {
     ///
     /// @notice Emits a {Deposit} event.
     ///
-    /// @notice **_NOTE:_** This function is WHITELISTED.
     /// @notice **_NOTE:_** When depositing, the `ZeroLiquid` contract must have **allowance()** to spend funds on
     /// behalf of **msg.sender** for at least **amount** of the **underlyingToken** being deposited.  This can be done
     /// via the standard `ERC20.approve()` method.
@@ -105,7 +101,6 @@ interface IZeroLiquidActions {
     ///
     /// @notice Emits a {Withdraw} event.
     ///
-    /// @notice **_NOTE:_** This function is WHITELISTED.
     ///
     /// @notice **Example:**
     /// @notice ```
@@ -137,7 +132,6 @@ interface IZeroLiquidActions {
     ///
     /// @notice Emits a {Withdraw} event.
     ///
-    /// @notice **_NOTE:_** This function is WHITELISTED.
     ///
     /// @notice **Example:**
     /// @notice ```
@@ -172,7 +166,6 @@ interface IZeroLiquidActions {
     ///
     /// @notice Emits a {Withdraw} event.
     ///
-    /// @notice **_NOTE:_** This function is WHITELISTED.
     /// @notice **_NOTE:_** The caller of `withdrawFrom()` must have **withdrawAllowance()** to withdraw funds on behalf
     /// of **owner** for at least the amount of `yieldTokens` that **shares** will be converted to.  This can be done
     /// via the `approveWithdraw()` or `permitWithdraw()` methods.
@@ -211,7 +204,6 @@ interface IZeroLiquidActions {
     ///
     /// @notice Emits a {Withdraw} event.
     ///
-    /// @notice **_NOTE:_** This function is WHITELISTED.
     /// @notice **_NOTE:_** The caller of `withdrawFrom()` must have **withdrawAllowance()** to withdraw funds on behalf
     /// of **owner** for at least the amount of `yieldTokens` that **shares** will be converted to.  This can be done
     /// via the `approveWithdraw()` or `permitWithdraw()` methods.
@@ -250,7 +242,6 @@ interface IZeroLiquidActions {
     ///
     /// @notice Emits a {Mint} event.
     ///
-    /// @notice **_NOTE:_** This function is WHITELISTED.
     ///
     /// @notice **Example:**
     /// @notice ```
@@ -269,7 +260,6 @@ interface IZeroLiquidActions {
     ///
     /// @notice Emits a {Mint} event.
     ///
-    /// @notice **_NOTE:_** This function is WHITELISTED.
     /// @notice **_NOTE:_** The caller of `mintFrom()` must have **mintAllowance()** to mint debt from the `Account`
     /// controlled by **owner** for at least the amount of **yieldTokens** that **shares** will be converted to.  This
     /// can be done via the `approveMint()` or `permitMint()` methods.
@@ -295,7 +285,6 @@ interface IZeroLiquidActions {
     ///
     /// @notice Emits a {Burn} event.
     ///
-    /// @notice **_NOTE:_** This function is WHITELISTED.
     ///
     /// @notice **Example:**
     /// @notice ```
@@ -320,7 +309,6 @@ interface IZeroLiquidActions {
     /// {ReplayLimitExceeded} error.
     ///
     /// @notice Emits a {Repay} event.
-    /// @notice **_NOTE:_** This function is WHITELISTED.
     ///
     /// @notice **Example:**
     /// @notice ```
@@ -357,7 +345,6 @@ interface IZeroLiquidActions {
     ///
     /// @notice Emits a {Liquidate} event.
     ///
-    /// @notice **_NOTE:_** This function is WHITELISTED.
     ///
     /// @notice **Example:**
     /// @notice ```
@@ -386,7 +373,6 @@ interface IZeroLiquidActions {
     ///
     /// @notice Emits a {Donate} event.
     ///
-    /// @notice **_NOTE:_** This function is WHITELISTED.
     ///
     /// @notice **Example:**
     /// @notice ```

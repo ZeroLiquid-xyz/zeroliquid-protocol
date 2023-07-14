@@ -14,8 +14,6 @@ import { IStableSwap2Pool } from "./../../src/interfaces/external/curve/IStableS
 
 contract Deployment is Script {
     uint256 constant BPS = 10_000;
-    // address constant admin = 0xbbfA751823F04c509346d14E3ec1182405ce2Dc4;
-    address constant whitelistETHAddress = 0x28E59622537DC8131199F14a7a2FD17DF09D33d0;
     IZeroLiquid constant zeroliquid = IZeroLiquid(0xAe482AaBB145c7492fDCaE7FAebdf3519B91a55a);
     address constant unshETH = 0xD99351D32EC8C067Ea1c8Bbfb41bD27836E871ce;
     address constant lsdVault = 0x09b4816583e7d342fD9F69a588D4d3ACa2D7D3Cb;
@@ -40,10 +38,6 @@ contract Deployment is Script {
             unshEthPoolIndex:  1,
             referral:        address(0)
         }));
-
-        // zeroliquid.setTokenAdapter(address(wstETH), address(adapter));
-        // IWhitelist(whitelistETHAddress).add(address(this));
-        // zeroliquid.setMaximumExpectedValue(address(wstETH), 1_000_000_000e18);
 
         vm.stopBroadcast();
     }
