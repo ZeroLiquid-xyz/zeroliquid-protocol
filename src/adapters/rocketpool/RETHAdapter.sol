@@ -17,7 +17,7 @@ import { IStableSwap2Pool } from "../../interfaces/external/curve/IStableSwap2Po
 import { IRocketStorage } from "../../interfaces/external/rocketpool/IRocketStorage.sol";
 
 struct InitializationParams {
-    address alchemist;
+    address zeroliquid;
     address token;
     address underlyingToken;
     address curvePool;
@@ -25,12 +25,12 @@ struct InitializationParams {
     uint256 rEthPoolIndex;
 }
 
-contract RETHAdapterV1 is ITokenAdapter, MutexLock {
+contract RETHAdapter is ITokenAdapter, MutexLock {
     using RocketPool for IRocketStorage;
 
-    string public override version = "1.1.0";
+    string public override version = "1.0.0";
 
-    address public immutable alchemist;
+    address public immutable zeroliquid;
     address public immutable override token;
     address public immutable override underlyingToken;
     address public immutable curvePool;
@@ -38,7 +38,7 @@ contract RETHAdapterV1 is ITokenAdapter, MutexLock {
     uint256 public immutable rEthPoolIndex;
 
     constructor(InitializationParams memory params) {
-        alchemist = params.alchemist;
+        zeroliquid = params.zeroliquid;
         token = params.token;
         underlyingToken = params.underlyingToken;
         curvePool = params.curvePool;
@@ -57,10 +57,10 @@ contract RETHAdapterV1 is ITokenAdapter, MutexLock {
         }
     }
 
-    /// @dev Checks that the message sender is the alchemist that the adapter is bound to.
-    modifier onlyAlchemist() {
-        if (msg.sender != alchemist) {
-            revert Unauthorized("Not alchemist");
+    /// @dev Checks that the message sender is the zeroliquid contract that the adapter is bound to.
+    modifier onlyZeroLiquid() {
+        if (msg.sender != zeroliquid) {
+            revert Unauthorized("Not ZeroLiquid");
         }
         _;
     }
@@ -77,7 +77,7 @@ contract RETHAdapterV1 is ITokenAdapter, MutexLock {
     }
 
     /// @inheritdoc ITokenAdapter
-    function wrap(uint256 amount, address recipient) external onlyAlchemist returns (uint256) {
+    function wrap(uint256 amount, address recipient) external onlyZeroLiquid returns (uint256) {
         amount;
         recipient; // Silence, compiler!
 
@@ -94,7 +94,7 @@ contract RETHAdapterV1 is ITokenAdapter, MutexLock {
     }
 
     // @inheritdoc ITokenAdapter
-    function unwrap(uint256 amount, address recipient) external lock onlyAlchemist returns (uint256) {
+    function unwrap(uint256 amount, address recipient) external lock onlyZeroLiquid returns (uint256) {
         // Transfer the rETH from the message sender.
         SafeERC20.safeTransferFrom(token, msg.sender, address(this), amount);
 
