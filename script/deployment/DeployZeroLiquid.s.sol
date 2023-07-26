@@ -11,14 +11,13 @@ import { ISteamerBuffer } from "./../../src/interfaces/steamer/ISteamerBuffer.so
 import { ZeroLiquid } from "./../../src/ZeroLiquid.sol";
 
 contract Deployment is Script {
-    address constant admin = 0x3f5E68DEae10e1Ce34A8Df42F1E2FD2f6B731B91;
-    address constant proxyAdmin = 0x250F69e781c728DC5C461a9C1616337BF40A6E0A;
-    IZeroLiquidToken constant zeroliquidtoken = IZeroLiquidToken(0x947d01482466729756eA55FD0825011A94B039A1);
-    ISteamerBuffer constant steamerBuffer = ISteamerBuffer(0x049C3e15E1E465b026ADE3dA5Be68ef6F94aC705);
+    address constant admin = 0xbbfA751823F04c509346d14E3ec1182405ce2Dc4;
+    address constant proxyAdmin = 0xBD35220FDD6dB91d64dca714FEEf9C6614c448a9;
+    IZeroLiquidToken constant zeroliquidtoken = IZeroLiquidToken(0xD077c1b31b1eC141DF3D64cC240C92053998F7ab);
+    ISteamerBuffer constant proxySteamerBuffer = ISteamerBuffer(0x36D01326a68C254E416E25058C462dDd20FaA2f2);
 
     TransparentUpgradeableProxy proxyZeroLiquid;
     ZeroLiquid zeroliquidLogic;
-    ZeroLiquid zeroliquid;
 
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_DEPLOYER");
@@ -30,7 +29,7 @@ contract Deployment is Script {
             .InitializationParams({
             admin: admin,
             debtToken: address(zeroliquidtoken),
-            steamer: address(steamerBuffer),
+            steamer: address(proxySteamerBuffer),
             minimumCollateralization: 10 * 1e18,
             protocolFee: 1000,
             protocolFeeReceiver: admin,
@@ -42,8 +41,6 @@ contract Deployment is Script {
         bytes memory zeroliquidParams = abi.encodeWithSelector(ZeroLiquid.initialize.selector, initializationParams);
 
         proxyZeroLiquid = new TransparentUpgradeableProxy(address(zeroliquidLogic), proxyAdmin, zeroliquidParams);
-
-        zeroliquid = ZeroLiquid(address(proxyZeroLiquid));
 
         vm.stopBroadcast();
     }

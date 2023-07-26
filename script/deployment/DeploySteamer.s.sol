@@ -11,10 +11,10 @@ import { Steamer } from "./../../src/Steamer.sol";
 import { SteamerBuffer } from "./../../src/SteamerBuffer.sol";
 
 contract Deployment is Script {
-    address constant admin = 0x3f5E68DEae10e1Ce34A8Df42F1E2FD2f6B731B91;
-    address constant proxyAdmin = 0x250F69e781c728DC5C461a9C1616337BF40A6E0A;
-    IZeroLiquidToken constant zeroliquidtoken = IZeroLiquidToken(0x947d01482466729756eA55FD0825011A94B039A1);
-    IWETH9 constant weth = IWETH9(0x8dF8C7506708BE301340B25fC4d928F7829F68E1);
+    address constant admin = 0xbbfA751823F04c509346d14E3ec1182405ce2Dc4;
+    address constant proxyAdmin = 0xBD35220FDD6dB91d64dca714FEEf9C6614c448a9;
+    IZeroLiquidToken constant zeroliquidtoken = IZeroLiquidToken(0xD077c1b31b1eC141DF3D64cC240C92053998F7ab);
+    IWETH9 constant weth = IWETH9(0xFb1cCC535677AcaED2E0dE6B03736E382216CB5A);
 
     Steamer steamer;
     SteamerBuffer steamerBuffer;
