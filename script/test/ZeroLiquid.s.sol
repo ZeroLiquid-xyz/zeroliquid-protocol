@@ -56,7 +56,7 @@ contract ZeroLiquidScript is Script {
     // IChainlinkOracle constant oracleStethUsd = IChainlinkOracle(0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e);
 
     function run() external {
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_ADMIN");
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_DEPLOYER");
         vm.startBroadcast(deployerPrivateKey);
 
         // ############################################################################### CONFIGURATIONS ##############
@@ -148,6 +148,10 @@ contract ZeroLiquidScript is Script {
         // SafeERC20.safeApprove(address(weth), address(zeroliquid), 1e18);
         // console.log("minimumAmountOut ==> %s", minimumAmountOut(1e18, address(wstETH)));
         // zeroliquid.depositUnderlying(address(wstETH), 1e18, deployer, minimumAmountOut(1e18, address(wstETH)));
+        // wethGateway.refreshAllowance(address(zeroliquid));
+        // wethGateway.depositUnderlying{ value: 1e18 }(
+        //     address(zeroliquid), address(wstETH), 1e18, deployer, minimumAmountOut(1e18, address(wstETH))
+        // );
 
         // DEPOSIT WSTETH
         // SafeERC20.safeApprove(address(wstETH), address(zeroliquid), 1e18);
