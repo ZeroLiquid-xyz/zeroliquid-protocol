@@ -13,8 +13,8 @@ import { SteamerBuffer } from "./../../src/SteamerBuffer.sol";
 contract Deployment is Script {
     address constant admin = 0xbbfA751823F04c509346d14E3ec1182405ce2Dc4;
     address constant proxyAdmin = 0xBD35220FDD6dB91d64dca714FEEf9C6614c448a9;
-    IZeroLiquidToken constant zeroliquidtoken = IZeroLiquidToken(0xD077c1b31b1eC141DF3D64cC240C92053998F7ab);
-    IWETH9 constant weth = IWETH9(0xFb1cCC535677AcaED2E0dE6B03736E382216CB5A);
+    IZeroLiquidToken constant zeroliquidtoken = IZeroLiquidToken(0x877D495Edb28B1aFb75B29c4cB626D8B1c26e962);
+    IWETH9 constant weth = IWETH9(0x7C068817BcCfE2D2fe3b50f3655e7EEC0a96A88c);
 
     Steamer steamer;
     SteamerBuffer steamerBuffer;
@@ -32,22 +32,22 @@ contract Deployment is Script {
         steamerBufferLogic = new SteamerBuffer();
         steamerLogic = new Steamer();
 
-        bytes memory transBufParams =
+        bytes memory steamBufParams =
             abi.encodeWithSelector(SteamerBuffer.initialize.selector, admin, address(zeroliquidtoken));
 
         proxySteamerBuffer = new TransparentUpgradeableProxy(
             address(steamerBufferLogic),
             proxyAdmin,
-            transBufParams
+            steamBufParams
         );
 
         steamerBuffer = SteamerBuffer(address(proxySteamerBuffer));
 
-        bytes memory transParams = abi.encodeWithSelector(
+        bytes memory steamParams = abi.encodeWithSelector(
             Steamer.initialize.selector, address(zeroliquidtoken), address(weth), address(steamerBuffer)
         );
 
-        proxySteamer = new TransparentUpgradeableProxy(address(steamerLogic), proxyAdmin, transParams);
+        proxySteamer = new TransparentUpgradeableProxy(address(steamerLogic), proxyAdmin, steamParams);
 
         steamer = Steamer(address(proxySteamer));
 
