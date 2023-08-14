@@ -14,10 +14,10 @@ import { IWETH9 } from "./../../src/interfaces/external/IWETH9.sol";
 import { IStableSwap2Pool } from "./../../src/interfaces/external/curve/IStableSwap2Pool.sol";
 
 contract Deployment is Script {
-    IZeroLiquid constant zeroliquid = IZeroLiquid(0xC818A4A3A82B07871B8Fea72579a9158272Ac052);
-    IRETH constant rETH = IRETH(0xf26c213Ae58eD8f0Aa3A484Fd6d746b4C6287e49);
-    IWETH9 constant weth = IWETH9(0xFb1cCC535677AcaED2E0dE6B03736E382216CB5A);
-    IStableSwap2Pool constant curvePool = IStableSwap2Pool(0x7213CF5E0F282fC7129edc2B02602C6e84Be201f);
+    IZeroLiquid constant zeroliquid = IZeroLiquid(0xF2E9450a568C01bf7d2A00cab0f729687F4Bfb17);
+    IRETH constant rETH = IRETH(0xF6c184eB69Fa254739daD44287F98F65aB6308fB);
+    IWETH9 constant weth = IWETH9(0x7C068817BcCfE2D2fe3b50f3655e7EEC0a96A88c);
+    IStableSwap2Pool constant curvePool = IStableSwap2Pool(0xB466036BBDe1afeCA12e64644fe53D565D9C24c9);
 
     RETHAdapter adapter;
 

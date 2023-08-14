@@ -294,29 +294,4 @@ interface IZeroLiquidAdminActions {
     ///
     /// @param yieldToken The address of the yield token to snap.
     function snap(address yieldToken) external;
-
-    /// @notice Sweep all of 'rewardtoken' from the zeroliquid into the rewardCollector;
-    ///
-    /// @notice `msg.sender` must be the admin or this call will revert with an {Unauthorized} error.
-    /// @notice `rewardToken` must not be a yield or underlying token or this call will revert with a {UnsupportedToken}
-    /// error.
-    ///
-    /// @param rewardToken The address of the reward token sweep.
-    /// @param yieldToken The address of the yield token whose rewards are being swept.
-    function sweepRewardTokens(address rewardToken, address yieldToken) external;
-
-    /// @notice Set the address of the V1 transfer adapter.
-    ///
-    /// @notice `msg.sender` must be the admin or this call will revert with an {Unauthorized} error.
-    ///
-    /// @param transferAdapterAddress The address of the V1 transfer adapter to be set in the zeroliquid.
-    function setTransferAdapterAddress(address transferAdapterAddress) external;
-
-    /// @notice Accept debt from the V1 transfer vault adapter.
-    ///
-    /// @notice `msg.sender` must be a sentinal or the admin or this call will revert with an {Unauthorized} error.
-    ///
-    /// @param owner    The owner of the account whos debt to increase.
-    /// @param debt     The amount of debt incoming from the V1 tranfer adapter.
-    function transferDebtV1(address owner, int256 debt) external;
 }

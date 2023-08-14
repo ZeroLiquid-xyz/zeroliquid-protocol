@@ -68,11 +68,6 @@ interface IZeroLiquidState {
     /// @return pendingAdmin The pending administrator address.
     function pendingAdmin() external view returns (address pendingAdmin);
 
-    /// @notice Gets the address of the transfer adapter.
-    ///
-    /// @return transferAdapter The transfer adapter address.
-    function transferAdapter() external view returns (address transferAdapter);
-
     /// @notice Gets if an address is a sentinel.
     ///
     /// @param sentinel The address to check.
@@ -157,10 +152,10 @@ interface IZeroLiquidState {
     /// @notice Gets information about the account owned by `owner`.
     ///
     /// @param owner The address that owns the account.
+    /// @param yieldToken The address of the yield token to query
     ///
     /// @return debt            The unrealized amount of debt that the account had incurred.
-    /// @return depositedTokens The yield tokens that the owner has deposited.
-    function accounts(address owner) external view returns (int256 debt, address[] memory depositedTokens);
+    function getAccount(address owner, address yieldToken) external view returns (int256 debt);
 
     /// @notice Gets information about a yield token position for the account owned by `owner`.
     ///
