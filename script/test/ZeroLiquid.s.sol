@@ -162,7 +162,7 @@ contract ZeroLiquidScript is Script {
         // zeroliquid.deposit(address(rETH), 1e18, deployer);
 
         // MINT DEBT
-        // zeroliquid.mint(address(wstETH), 1e17, deployer);
+        // zeroliquid.mint(address(wstETH), 2e17, deployer);
         // zeroliquid.mint(address(rETH), 1e17, deployer);
 
         // REPAY DEBT
@@ -170,7 +170,7 @@ contract ZeroLiquidScript is Script {
         // zeroliquid.repay(address(rETH), address(weth), 81_935_483_870_967_748, deployer);
 
         // LIQUIDATE
-        // zeroliquid.liquidate(address(wstETH), 1e18, minimumAmountOut(1e18, address(wstETH)));
+        // zeroliquid.liquidate(address(wstETH), 1e18, minimumAmountOut(1e17, address(wstETH)));
 
         // WITHDRAW wstETH
         // zeroliquid.withdraw(address(wstETH), 1e18, deployer);
