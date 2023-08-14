@@ -120,18 +120,6 @@ interface IZeroLiquidEvents {
     /// @param expectedValue The updated expected value measured in the yield token's underlying token.
     event Snap(address indexed yieldToken, uint256 expectedValue);
 
-    /// @notice Emitted when a the admin sweeps all of one reward token from the ZeroLiquid
-    ///
-    /// @param rewardToken The address of the reward token.
-    /// @param amount      The amount of 'rewardToken' swept into the admin.
-    event SweepRewardTokens(address indexed rewardToken, uint256 amount);
-
-    /// @notice Emitted when a the admin sweeps all of one token from the ZeroLiquid
-    ///
-    /// @param token The address of the reward token.
-    /// @param amount      The amount of 'token' swept into the admin.
-    event SweepTokens(address indexed token, uint256 amount);
-
     /// @notice Emitted when `owner` grants `spender` the ability to mint debt tokens on its behalf.
     ///
     /// @param owner   The address of the account owner.

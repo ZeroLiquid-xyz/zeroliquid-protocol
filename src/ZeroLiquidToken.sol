@@ -28,6 +28,9 @@ contract ZeroLiquidToken is AccessControl, ReentrancyGuard, ERC20, IERC3156Flash
     /// @notice The maximum number of basis points needed to represent 100%.
     uint256 public constant BPS = 10_000;
 
+    /// @notice The maximum number of basis points needed to represent 5%.
+    uint256 public constant MAX_FLASH_MINT_FEE = 500;
+
     /// @notice A set of addresses which are whitelisted for minting new tokens.
     mapping(address => bool) public whitelisted;
 
@@ -57,6 +60,10 @@ contract ZeroLiquidToken is AccessControl, ReentrancyGuard, ERC20, IERC3156Flash
     event SetMaxFlashLoan(uint256 maxFlashLoan);
 
     constructor(string memory _name, string memory _symbol, uint256 _flashFee) ERC20(_name, _symbol) {
+        if (_flashFee >= MAX_FLASH_MINT_FEE) {
+            revert IllegalArgument();
+        }
+
         _setupRole(ADMIN_ROLE, msg.sender);
         _setupRole(SENTINEL_ROLE, msg.sender);
         _setRoleAdmin(SENTINEL_ROLE, ADMIN_ROLE);
@@ -95,7 +102,7 @@ contract ZeroLiquidToken is AccessControl, ReentrancyGuard, ERC20, IERC3156Flash
     ///
     /// @param newFee The new flash mint fee.
     function setFlashFee(uint256 newFee) external onlyAdmin {
-        if (newFee >= BPS) {
+        if (newFee >= MAX_FLASH_MINT_FEE) {
             revert IllegalArgument();
         }
         flashMintFee = newFee;
