@@ -32,7 +32,7 @@ contract ZeroLiquidScript is Script {
     uint256 constant BPS = 10_000;
     address constant deployer = 0xf9175C0149F0B6CdDE5B68A744C6cCA93a0635f5;
     address constant admin = 0xbbfA751823F04c509346d14E3ec1182405ce2Dc4;
-    address constant user_1 = 0x758ae03800AA562399BFe5cffbad98Bfc66776C8;
+    address constant user_m = 0x92cd1E7EC07B407027e8F667eB0C7354219f2433;
 
     IWETH9 constant weth = IWETH9(0x7C068817BcCfE2D2fe3b50f3655e7EEC0a96A88c);
     IStETH constant stETH = IStETH(0x57E540805081E144C0E969009894aadcd4c84a87);
@@ -173,7 +173,7 @@ contract ZeroLiquidScript is Script {
         // zeroliquid.liquidate(address(wstETH), 1e18, minimumAmountOut(1e17, address(wstETH)));
 
         // WITHDRAW wstETH
-        // zeroliquid.withdraw(address(wstETH), 1e18, deployer);
+        // zeroliquid.withdraw(address(wstETH), 1.8e18, deployer);
         // zeroliquid.withdraw(address(rETH), 2e18, deployer);
 
         // HARVEST
@@ -204,6 +204,8 @@ contract ZeroLiquidScript is Script {
         // steamerBuffer.exchange(address(weth));
 
         // ############################################################################### STEAMER #####################
+
+        // steamer.withdraw(3e17, user_m);
 
         // #############################################################################################################
 
