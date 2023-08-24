@@ -4,11 +4,10 @@ pragma solidity >=0.5.0;
 import "./ISteamer.sol";
 import "../IZeroLiquid.sol";
 import "../IERC20TokenReceiver.sol";
-import "openzeppelin-contracts/contracts/access/IAccessControl.sol";
 
 /// @title  ISteamerBuffer
 /// @author ZeroLiquid
-interface ISteamerBuffer is IERC20TokenReceiver, IAccessControl {
+interface ISteamerBuffer is IERC20TokenReceiver {
     /// @notice Parameters used to define a given weighting schema.
     ///
     /// Weighting schemas can be used to generally weight assets in relation to an action or actions that will be taken.
@@ -73,10 +72,8 @@ interface ISteamerBuffer is IERC20TokenReceiver, IAccessControl {
 
     /// @notice Gets the total credit against the yield token held by the SteamerBuffer.
     ///
-    /// @param yieldToken The yield token to query
-    ///
     /// @return The total credit.
-    function getTotalCredit(address yieldToken) external view returns (uint256);
+    function getTotalCredit() external view returns (uint256);
 
     /// @notice Gets the total amount of underlying token that the SteamerBuffer controls in the ZeroLiquid.
     ///
@@ -182,8 +179,7 @@ interface ISteamerBuffer is IERC20TokenReceiver, IAccessControl {
 
     /// @notice Burns available credit againt a yield token in the zeroliquid.
     ///
-    /// @param yieldToken The yield token against which the credit is to be burned
-    function burnCredit(address yieldToken) external;
+    function burnCredit() external;
 
     /// @notice Deposits local collateral into the zeroliquid
     ///

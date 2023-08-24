@@ -13,8 +13,8 @@ import { ZeroLiquid } from "./../../src/ZeroLiquid.sol";
 contract Deployment is Script {
     address constant admin = 0xbbfA751823F04c509346d14E3ec1182405ce2Dc4;
     address constant proxyAdmin = 0xBD35220FDD6dB91d64dca714FEEf9C6614c448a9;
-    IZeroLiquidToken constant zeroliquidtoken = IZeroLiquidToken(0x877D495Edb28B1aFb75B29c4cB626D8B1c26e962);
-    ISteamerBuffer constant proxySteamerBuffer = ISteamerBuffer(0x1392f0037304AEdc6d955DA1B09A4b944aF33EB4);
+    IZeroLiquidToken constant zeroliquidtoken = IZeroLiquidToken(0x888ED3D6Af5418098C16B8445caeea2081399636);
+    ISteamerBuffer constant proxySteamerBuffer = ISteamerBuffer(0x74826F19Dd0063823D47d9404Fb5Dfc3473Ccd78);
 
     TransparentUpgradeableProxy proxyZeroLiquid;
     ZeroLiquid zeroliquidLogic;
@@ -31,10 +31,10 @@ contract Deployment is Script {
             debtToken: address(zeroliquidtoken),
             steamer: address(proxySteamerBuffer),
             minimumCollateralization: 10 * 1e18,
-            protocolFee: 1000,
+            protocolFee: 0,
             protocolFeeReceiver: admin,
-            mintingLimitMinimum: 1,
-            mintingLimitMaximum: uint256(type(uint160).max),
+            mintingLimitMinimum: 100_000_000_000_000_000_000,
+            mintingLimitMaximum: 600_000_000_000_000_000_000,
             mintingLimitBlocks: 300
         });
 
