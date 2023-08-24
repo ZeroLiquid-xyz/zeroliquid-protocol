@@ -1,35 +1,21 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.13;
 
-import { AccessControl } from "../lib/openzeppelin-contracts/contracts/access/AccessControl.sol";
-import { ERC20 } from "../lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
-import { Ownable } from "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
-import { ReentrancyGuard } from "../lib/openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
+import { AccessControl } from "openzeppelin-contracts/contracts/access/AccessControl.sol";
+import { ERC20 } from "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 
-import { IllegalArgument, IllegalState, Unauthorized } from "./base/Errors.sol";
-
-import { IERC3156FlashLender } from "../lib/openzeppelin-contracts/contracts/interfaces/IERC3156FlashLender.sol";
-import { IERC3156FlashBorrower } from "../lib/openzeppelin-contracts/contracts/interfaces/IERC3156FlashBorrower.sol";
+import { IllegalState, Unauthorized } from "./base/Errors.sol";
 
 /// @title  ZeroLiquidToken
 /// @author ZeroLiquid
 ///
 /// @notice This is the contract for zeroliquid tokens.
-contract ZeroLiquidToken is AccessControl, ReentrancyGuard, ERC20, IERC3156FlashLender {
+contract ZeroLiquidToken is AccessControl, ERC20 {
     /// @notice The identifier of the role which maintains other roles.
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN");
 
     /// @notice The identifier of the role which allows accounts to mint tokens.
     bytes32 public constant SENTINEL_ROLE = keccak256("SENTINEL");
-
-    /// @notice The expected return value from a flash mint receiver
-    bytes32 public constant CALLBACK_SUCCESS = keccak256("ERC3156FlashBorrower.onFlashLoan");
-
-    /// @notice The maximum number of basis points needed to represent 100%.
-    uint256 public constant BPS = 10_000;
-
-    /// @notice The maximum number of basis points needed to represent 5%.
-    uint256 public constant MAX_FLASH_MINT_FEE = 500;
 
     /// @notice A set of addresses which are whitelisted for minting new tokens.
     mapping(address => bool) public whitelisted;
@@ -37,39 +23,17 @@ contract ZeroLiquidToken is AccessControl, ReentrancyGuard, ERC20, IERC3156Flash
     /// @notice A set of addresses which are paused from minting new tokens.
     mapping(address => bool) public paused;
 
-    /// @notice Fee for flash minting
-    uint256 public flashMintFee;
-
-    /// @notice Max flash mint amount
-    uint256 public maxFlashLoanAmount;
-
     /// @notice An event which is emitted when a minter is paused from minting.
     ///
     /// @param minter The address of the minter which was paused.
     /// @param state  A flag indicating if the zeroliquid is paused or unpaused.
     event Paused(address minter, bool state);
 
-    /// @notice An event which is emitted when the flash mint fee is updated.
-    ///
-    /// @param fee The new flash mint fee.
-    event SetFlashMintFee(uint256 fee);
-
-    /// @notice An event which is emitted when the max flash loan is updated.
-    ///
-    /// @param maxFlashLoan The new max flash loan.
-    event SetMaxFlashLoan(uint256 maxFlashLoan);
-
-    constructor(string memory _name, string memory _symbol, uint256 _flashFee) ERC20(_name, _symbol) {
-        if (_flashFee >= MAX_FLASH_MINT_FEE) {
-            revert IllegalArgument();
-        }
-
+    constructor(string memory _name, string memory _symbol) ERC20(_name, _symbol) {
         _setupRole(ADMIN_ROLE, msg.sender);
         _setupRole(SENTINEL_ROLE, msg.sender);
         _setRoleAdmin(SENTINEL_ROLE, ADMIN_ROLE);
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
-        flashMintFee = _flashFee;
-        emit SetFlashMintFee(_flashFee);
     }
 
     /// @dev A modifier which checks that the caller has the admin role.
@@ -94,19 +58,6 @@ contract ZeroLiquidToken is AccessControl, ReentrancyGuard, ERC20, IERC3156Flash
             revert Unauthorized();
         }
         _;
-    }
-
-    /// @notice Sets the flash minting fee.
-    ///
-    /// @notice This function reverts if `msg.sender` is not an admin.
-    ///
-    /// @param newFee The new flash mint fee.
-    function setFlashFee(uint256 newFee) external onlyAdmin {
-        if (newFee >= MAX_FLASH_MINT_FEE) {
-            revert IllegalArgument();
-        }
-        flashMintFee = newFee;
-        emit SetFlashMintFee(flashMintFee);
     }
 
     /// @notice Mints tokens to `a recipient.`
@@ -170,78 +121,5 @@ contract ZeroLiquidToken is AccessControl, ReentrancyGuard, ERC20, IERC3156Flash
 
         _approve(account, msg.sender, newAllowance);
         _burn(account, amount);
-    }
-
-    /// @notice Adjusts the maximum flashloan amount.
-    ///
-    /// @param _maxFlashLoanAmount The maximum flashloan amount.
-    function setMaxFlashLoan(uint256 _maxFlashLoanAmount) external onlyAdmin {
-        maxFlashLoanAmount = _maxFlashLoanAmount;
-        emit SetMaxFlashLoan(_maxFlashLoanAmount);
-    }
-
-    /// @notice Gets the maximum amount to be flash loaned of a token.
-    ///
-    /// @param token The address of the token.
-    ///
-    /// @return The maximum amount of `token` that can be flashed loaned.
-    function maxFlashLoan(address token) public view override returns (uint256) {
-        if (token != address(this)) {
-            return 0;
-        }
-        return maxFlashLoanAmount;
-    }
-
-    /// @notice Gets the flash loan fee of `amount` of `token`.
-    ///
-    /// @param token  The address of the token.`
-    /// @param amount The amount of `token` to flash mint.
-    ///
-    /// @return The flash loan fee.
-    function flashFee(address token, uint256 amount) public view override returns (uint256) {
-        if (token != address(this)) {
-            revert IllegalArgument();
-        }
-        return amount * flashMintFee / BPS;
-    }
-
-    /// @notice Performs a flash mint (called flash loan to confirm with ERC3156 standard).
-    ///
-    /// @param receiver The address which will receive the flash minted tokens.
-    /// @param token    The address of the token to flash mint.
-    /// @param amount   How much to flash mint.
-    /// @param data     ABI encoded data to pass to the receiver.
-    ///
-    /// @return If the flash loan was successful.
-    function flashLoan(
-        IERC3156FlashBorrower receiver,
-        address token,
-        uint256 amount,
-        bytes calldata data
-    )
-        external
-        override
-        nonReentrant
-        returns (bool)
-    {
-        if (token != address(this)) {
-            revert IllegalArgument();
-        }
-
-        if (amount > maxFlashLoan(token)) {
-            revert IllegalArgument();
-        }
-
-        uint256 fee = flashFee(token, amount);
-
-        _mint(address(receiver), amount);
-
-        if (receiver.onFlashLoan(msg.sender, token, amount, fee, data) != CALLBACK_SUCCESS) {
-            revert IllegalState();
-        }
-
-        _burn(address(receiver), amount + fee); // Will throw error if not enough to burn
-
-        return true;
     }
 }

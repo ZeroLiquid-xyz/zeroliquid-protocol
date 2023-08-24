@@ -146,8 +146,8 @@ contract SteamerBuffer is ISteamerBuffer, AccessControl, Initializable {
     }
 
     /// @inheritdoc ISteamerBuffer
-    function getTotalCredit(address yieldToken) public view override returns (uint256) {
-        int256 debt = IZeroLiquid(zeroliquid).getAccount(address(this), yieldToken);
+    function getTotalCredit() public view override returns (uint256) {
+        (int256 debt,) = IZeroLiquid(zeroliquid).accounts(address(this));
         return debt >= 0 ? 0 : SafeCast.toUint256(-debt);
     }
 
@@ -382,13 +382,13 @@ contract SteamerBuffer is ISteamerBuffer, AccessControl, Initializable {
     }
 
     /// @inheritdoc ISteamerBuffer
-    function burnCredit(address yieldToken) external override onlyKeeper {
+    function burnCredit() external override onlyKeeper {
         IZeroLiquid(zeroliquid).poke(address(this));
-        uint256 credit = getTotalCredit(yieldToken);
+        uint256 credit = getTotalCredit();
         if (credit == 0) {
             revert IllegalState();
         }
-        IZeroLiquid(zeroliquid).mint(yieldToken, credit, address(this));
+        IZeroLiquid(zeroliquid).mint(credit, address(this));
 
         _zeroliquidAction(credit, debtToken, _zeroliquidDonate);
     }

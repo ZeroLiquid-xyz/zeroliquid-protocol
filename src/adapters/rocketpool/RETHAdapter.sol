@@ -15,14 +15,12 @@ import { IWETH9 } from "../../interfaces/external/IWETH9.sol";
 import { IRETH } from "../../interfaces/external/rocketpool/IRETH.sol";
 import { IStableSwap2Pool } from "../../interfaces/external/curve/IStableSwap2Pool.sol";
 import { IRocketStorage } from "../../interfaces/external/rocketpool/IRocketStorage.sol";
+import { ISwapRouter } from "../../interfaces/external/uniswap/ISwapRouter.sol";
 
 struct InitializationParams {
     address zeroliquid;
     address token;
     address underlyingToken;
-    address curvePool;
-    uint256 ethPoolIndex;
-    uint256 rEthPoolIndex;
 }
 
 contract RETHAdapter is ITokenAdapter, MutexLock {
@@ -30,31 +28,16 @@ contract RETHAdapter is ITokenAdapter, MutexLock {
 
     string public override version = "1.0.0";
 
+    address constant uniswapRouterV3 = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
+
     address public immutable zeroliquid;
     address public immutable override token;
     address public immutable override underlyingToken;
-    address public immutable curvePool;
-    uint256 public immutable ethPoolIndex;
-    uint256 public immutable rEthPoolIndex;
 
     constructor(InitializationParams memory params) {
         zeroliquid = params.zeroliquid;
         token = params.token;
         underlyingToken = params.underlyingToken;
-        curvePool = params.curvePool;
-        ethPoolIndex = params.ethPoolIndex;
-        rEthPoolIndex = params.rEthPoolIndex;
-
-        // Verify and make sure that the provided ETH matches the curve pool ETH.
-        if (IStableSwap2Pool(params.curvePool).coins(params.ethPoolIndex) != 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)
-        {
-            revert IllegalArgument("Curve pool ETH token mismatch");
-        }
-
-        // Verify and make sure that the provided rETH matches the curve pool rETH.
-        if (IStableSwap2Pool(params.curvePool).coins(params.rEthPoolIndex) != params.token) {
-            revert IllegalArgument("Curve pool rETH token mismatch");
-        }
     }
 
     /// @dev Checks that the message sender is the zeroliquid contract that the adapter is bound to.
@@ -66,8 +49,8 @@ contract RETHAdapter is ITokenAdapter, MutexLock {
     }
 
     receive() external payable {
-        if (msg.sender != underlyingToken && msg.sender != token && msg.sender != curvePool) {
-            revert Unauthorized("Payments only permitted from WETH, rETH or curve pool");
+        if (msg.sender != underlyingToken && msg.sender != token) {
+            revert Unauthorized("Payments only permitted from WETH or rETH");
         }
     }
 
@@ -111,19 +94,19 @@ contract RETHAdapter is ITokenAdapter, MutexLock {
             IWETH9(underlyingToken).deposit{ value: receivedEth }();
         } else {
             // Set up and execute uniswap exchange
-            SafeERC20.safeApprove(token, curvePool, amount);
+            SafeERC20.safeApprove(token, uniswapRouterV3, amount);
+            ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
+                tokenIn: token,
+                tokenOut: underlyingToken,
+                fee: 3000,
+                recipient: address(this),
+                deadline: block.timestamp,
+                amountIn: amount,
+                amountOutMinimum: 0,
+                sqrtPriceLimitX96: 0
+            });
 
-            // Exchange the rtETH for ETH. We do not check the curve pool because it is an immutable
-            // contract and we expect that its output is reliable.
-            receivedEth = IStableSwap2Pool(curvePool).exchange(
-                int128(uint128(rEthPoolIndex)),
-                int128(uint128(ethPoolIndex)),
-                amount,
-                0 // <- Slippage is handled upstream
-            );
-
-            // Wrap the ETH that we received from the pool.
-            IWETH9(underlyingToken).deposit{ value: receivedEth }();
+            receivedEth = ISwapRouter(uniswapRouterV3).exactInputSingle(params);
         }
 
         // Transfer the tokens to the recipient.

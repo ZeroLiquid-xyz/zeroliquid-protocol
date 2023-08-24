@@ -27,9 +27,9 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
 
     /// @notice A user account.
     struct Account {
-        // A signed value which represents the current amount of debt or credit that the account has accrued
-        // against a specific yield token. Positive values indicate debt, negative values indicate credit.
-        mapping(address => int256) debts;
+        // A signed value which represents the current amount of debt or credit that the account has accrued.
+        // Positive values indicate debt, negative values indicate credit.
+        int256 debt;
         // The share balances for each yield token.
         mapping(address => uint256) balances;
         // The last values recorded for accrued weights for each yield token.
@@ -139,8 +139,11 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
         return _supportedYieldTokens.contains(yieldToken);
     }
 
-    function getAccount(address owner, address yieldToken) external view returns (int256 debt) {
-        return _calculateRealizedDebt(owner, yieldToken);
+    /// @inheritdoc IZeroLiquidState
+    function accounts(address owner) external view override returns (int256 debt, address[] memory depositedTokens) {
+        Account storage account = _accounts[owner];
+
+        return (_calculateUnrealizedDebt(owner), account.depositedTokens.values);
     }
 
     /// @inheritdoc IZeroLiquidState
@@ -621,16 +624,16 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
     }
 
     /// @inheritdoc IZeroLiquidActions
-    function mint(address yieldToken, uint256 amount, address recipient) external override lock {
+    function mint(uint256 amount, address recipient) external override lock {
         _checkArgument(amount > 0);
         _checkArgument(recipient != address(0));
 
         // Mint tokens from the message sender's account to the recipient.
-        _mint(yieldToken, msg.sender, amount, recipient);
+        _mint(msg.sender, amount, recipient);
     }
 
     /// @inheritdoc IZeroLiquidActions
-    function mintFrom(address yieldToken, address owner, uint256 amount, address recipient) external override lock {
+    function mintFrom(address owner, uint256 amount, address recipient) external override lock {
         _checkArgument(amount > 0);
         _checkArgument(recipient != address(0));
 
@@ -639,11 +642,11 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
         _decreaseMintAllowance(owner, msg.sender, amount);
 
         // Mint tokens from the owner's account to the recipient.
-        _mint(yieldToken, owner, amount, recipient);
+        _mint(owner, amount, recipient);
     }
 
     /// @inheritdoc IZeroLiquidActions
-    function burn(address yieldToken, uint256 amount, address recipient) external override lock returns (uint256) {
+    function burn(uint256 amount, address recipient) external override lock returns (uint256) {
         _checkArgument(amount > 0);
         _checkArgument(recipient != address(0));
 
@@ -659,7 +662,7 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
         // credit that was earned since the last update. We do not want to perform a noop so we need to check that the
         // amount of debt to repay is greater than zero.
         int256 debt;
-        _checkState((debt = _accounts[recipient].debts[yieldToken]) > 0);
+        _checkState((debt = _accounts[recipient].debt) > 0);
 
         // Limit how much debt can be repaid up to the current amount of debt that the account has. This prevents
         // situations where the user may be trying to repay their entire debt, but it decreases since they send the
@@ -669,7 +672,7 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
         uint256 credit = amount > uint256(debt) ? uint256(debt) : amount;
 
         // Update the recipient's debt against the yield token
-        _updateDebt(yieldToken, recipient, -SafeCast.toInt256(credit));
+        _updateDebt(recipient, -SafeCast.toInt256(credit));
 
         // Burn the tokens from the message sender.
         TokenUtils.safeBurnFrom(debtToken, msg.sender, credit);
@@ -685,7 +688,6 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
 
     /// @inheritdoc IZeroLiquidActions
     function repay(
-        address yieldToken,
         address underlyingToken,
         uint256 amount,
         address recipient
@@ -713,7 +715,7 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
         // credit that was earned since the last update. We do not want to perform a noop so we need to check that the
         // amount of debt to repay is greater than zero.
         int256 debt;
-        _checkState((debt = _accounts[recipient].debts[yieldToken]) > 0);
+        _checkState((debt = _accounts[recipient].debt) > 0);
 
         // Determine the maximum amount of underlying tokens that can be repaid.
         //
@@ -736,7 +738,7 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
         uint256 credit = normalizeUnderlyingTokensToDebt(underlyingToken, actualAmount);
 
         // Update the recipient's debt against the yield token
-        _updateDebt(yieldToken, recipient, -SafeCast.toInt256(credit));
+        _updateDebt(recipient, -SafeCast.toInt256(credit));
 
         // Decrease the amount of the underlying token which is globally available to be repaid.
         limiter.decrease(actualAmount);
@@ -779,7 +781,7 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
         // credit that was earned since the last update. We do not want to perform a noop so we need to check that the
         // amount of debt to repay is greater than zero.
         int256 unrealizedDebt;
-        _checkState((unrealizedDebt = _calculateRealizedDebt(msg.sender, yieldToken)) > 0);
+        _checkState((unrealizedDebt = _calculateUnrealizedDebt(msg.sender)) > 0);
 
         // Determine the maximum amount of shares that can be liquidated from the unrealized debt.
         //
@@ -822,7 +824,7 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
         // decrease the value of the token that the system is expected to hold.
         _poke(msg.sender, yieldToken);
         _burnShares(msg.sender, yieldToken, actualShares);
-        _updateDebt(yieldToken, msg.sender, -SafeCast.toInt256(credit));
+        _updateDebt(msg.sender, -SafeCast.toInt256(credit));
         _sync(yieldToken, amountYieldTokens, _usub);
 
         // Decrease the amount of the underlying token which is globally available to be liquidated.
@@ -1131,7 +1133,7 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
         _sync(yieldToken, amountYieldTokens, _usub);
 
         // Valid the owner's account to assure that the collateralization invariant is still held.
-        _validate(owner, yieldToken);
+        _validate(owner);
 
         emit Withdraw(owner, yieldToken, shares, recipient);
 
@@ -1145,7 +1147,7 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
     /// @param owner     The owner of the account to mint from.
     /// @param amount    The amount to mint.
     /// @param recipient The recipient of the minted debt tokens.
-    function _mint(address yieldToken, address owner, uint256 amount, address recipient) internal {
+    function _mint(address owner, uint256 amount, address recipient) internal {
         // Check that the system will allow for the specified amount to be minted.
         _checkMintingLimit(amount);
 
@@ -1160,8 +1162,8 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
         // Update the owner's account, increase their debt by the amount of tokens to mint, and then finally validate
         // their account to assure that the collateralization invariant is still held.
         _poke(owner);
-        _updateDebt(yieldToken, owner, SafeCast.toInt256(amount));
-        _validate(owner, yieldToken);
+        _updateDebt(owner, SafeCast.toInt256(amount));
+        _validate(owner);
 
         // Decrease the global amount of mintable debt tokens.
         _mintingLimiter.decrease(amount);
@@ -1334,7 +1336,7 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
         uint256 balance = account.balances[yieldToken];
         uint256 unrealizedCredit = (currentAccruedWeight - lastAccruedWeight) * balance / FIXED_POINT_SCALAR;
 
-        account.debts[yieldToken] -= SafeCast.toInt256(unrealizedCredit);
+        account.debt -= SafeCast.toInt256(unrealizedCredit);
         account.lastAccruedWeights[yieldToken] = currentAccruedWeight;
     }
 
@@ -1342,9 +1344,9 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
     ///
     /// @param owner     The address of the account owner.
     /// @param amount    The amount to increase the debt by.
-    function _updateDebt(address yieldToken, address owner, int256 amount) internal {
+    function _updateDebt(address owner, int256 amount) internal {
         Account storage account = _accounts[owner];
-        account.debts[yieldToken] += amount;
+        account.debt += amount;
     }
 
     /// @dev Set the mint allowance for `spender` to `amount` for the account owned by `owner`.
@@ -1396,8 +1398,8 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
     /// @dev If the account is undercollateralized then this will revert with an {Undercollateralized} error.
     ///
     /// @param owner The address of the account owner.
-    function _validate(address owner, address yieldToken) internal view {
-        int256 debt = _accounts[owner].debts[yieldToken];
+    function _validate(address owner) internal view {
+        int256 debt = _accounts[owner].debt;
         if (debt <= 0) {
             return;
         }
@@ -1471,28 +1473,33 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
     /// @dev Gets the amount of debt that the account owned by `owner` will have after an update occurs.
     ///
     /// @param owner The address of the account owner.
-    /// @param yieldToken The address of the yield token the realized debt is being calculated for.
     ///
     /// @return The amount of debt that the account owned by `owner` will have after an update.
-    function _calculateRealizedDebt(address owner, address yieldToken) internal view returns (int256) {
-        int256 debt = _accounts[owner].debts[yieldToken];
+    function _calculateUnrealizedDebt(address owner) internal view returns (int256) {
+        int256 debt = _accounts[owner].debt;
 
-        uint256 currentAccruedWeight = _yieldTokens[yieldToken].accruedWeight;
-        uint256 lastAccruedWeight = _accounts[owner].lastAccruedWeights[yieldToken];
-        uint256 unlockedCredit = _calculateUnlockedCredit(yieldToken);
+        Sets.AddressSet storage depositedTokens = _accounts[owner].depositedTokens;
+        for (uint256 i = 0; i < depositedTokens.values.length; ++i) {
+            address yieldToken = depositedTokens.values[i];
 
-        currentAccruedWeight +=
-            unlockedCredit > 0 ? unlockedCredit * FIXED_POINT_SCALAR / _yieldTokens[yieldToken].totalShares : 0;
+            uint256 currentAccruedWeight = _yieldTokens[yieldToken].accruedWeight;
+            uint256 lastAccruedWeight = _accounts[owner].lastAccruedWeights[yieldToken];
+            uint256 unlockedCredit = _calculateUnlockedCredit(yieldToken);
 
-        if (currentAccruedWeight == lastAccruedWeight) {
-            return debt;
-        } else {
+            currentAccruedWeight +=
+                unlockedCredit > 0 ? unlockedCredit * FIXED_POINT_SCALAR / _yieldTokens[yieldToken].totalShares : 0;
+
+            if (currentAccruedWeight == lastAccruedWeight) {
+                continue;
+            }
+
             uint256 balance = _accounts[owner].balances[yieldToken];
             uint256 unrealizedCredit = ((currentAccruedWeight - lastAccruedWeight) * balance) / FIXED_POINT_SCALAR;
-            debt -= SafeCast.toInt256(unrealizedCredit);
 
-            return debt;
+            debt -= SafeCast.toInt256(unrealizedCredit);
         }
+
+        return debt;
     }
 
     /// @dev Gets the virtual active balance of `yieldToken`.
