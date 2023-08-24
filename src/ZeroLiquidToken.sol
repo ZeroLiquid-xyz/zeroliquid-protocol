@@ -9,7 +9,7 @@ import { IllegalState, Unauthorized } from "./base/Errors.sol";
 /// @title  ZeroLiquidToken
 /// @author ZeroLiquid
 ///
-/// @notice This is the contract for zeroliquid tokens.
+/// @notice This is the contract for zeroliquid synthetic debt token.
 contract ZeroLiquidToken is AccessControl, ERC20 {
     /// @notice The identifier of the role which maintains other roles.
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN");
@@ -29,9 +29,9 @@ contract ZeroLiquidToken is AccessControl, ERC20 {
     /// @param state  A flag indicating if the zeroliquid is paused or unpaused.
     event Paused(address minter, bool state);
 
-    constructor(string memory _name, string memory _symbol) ERC20(_name, _symbol) {
-        _setupRole(ADMIN_ROLE, msg.sender);
-        _setupRole(SENTINEL_ROLE, msg.sender);
+    constructor(string memory _name, string memory _symbol, address _admin) ERC20(_name, _symbol) {
+        _setupRole(ADMIN_ROLE, _admin);
+        _setupRole(SENTINEL_ROLE, _admin);
         _setRoleAdmin(SENTINEL_ROLE, ADMIN_ROLE);
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
     }

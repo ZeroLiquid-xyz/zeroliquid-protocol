@@ -12,7 +12,7 @@ contract Deployment is Script {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_DEPLOYER");
         vm.startBroadcast(deployerPrivateKey);
 
-        zeroliquidtoken = new ZeroLiquidToken("ZeroLiquid ETH", "zETH");
+        zeroliquidtoken = new ZeroLiquidToken("ZeroLiquid ETH", "zETH", 0xAF8794cDA6Aa82e7E0589B0684a24A47C161f9e2);
 
         vm.stopBroadcast();
     }

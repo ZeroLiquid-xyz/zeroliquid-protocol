@@ -11,10 +11,11 @@ import { ISteamerBuffer } from "./../../src/interfaces/steamer/ISteamerBuffer.so
 import { ZeroLiquid } from "./../../src/ZeroLiquid.sol";
 
 contract Deployment is Script {
-    address constant admin = 0xbbfA751823F04c509346d14E3ec1182405ce2Dc4;
-    address constant proxyAdmin = 0xBD35220FDD6dB91d64dca714FEEf9C6614c448a9;
-    IZeroLiquidToken constant zeroliquidtoken = IZeroLiquidToken(0x888ED3D6Af5418098C16B8445caeea2081399636);
-    ISteamerBuffer constant proxySteamerBuffer = ISteamerBuffer(0x74826F19Dd0063823D47d9404Fb5Dfc3473Ccd78);
+    address constant admin = 0xAF8794cDA6Aa82e7E0589B0684a24A47C161f9e2;
+    address constant proxyAdmin = 0x9FA1B904ba1E29ed45E183EFE6a47aCDC2d15eFA;
+    IZeroLiquidToken constant zeroliquidtoken = IZeroLiquidToken(0x776280F68aD33c4d49e6846507B7dBaf7811c89F);
+    ISteamerBuffer constant proxySteamerBuffer = ISteamerBuffer(0xc429B3aABa6daC296BD5b6d42513683f1f22C5b1);
+    address constant zeroliquidLogicAddress = 0x1b6a205358e9378Bf9d6cb75F4D3cCcab38cA796;
 
     TransparentUpgradeableProxy proxyZeroLiquid;
     ZeroLiquid zeroliquidLogic;
@@ -33,14 +34,14 @@ contract Deployment is Script {
             minimumCollateralization: 10 * 1e18,
             protocolFee: 0,
             protocolFeeReceiver: admin,
-            mintingLimitMinimum: 100_000_000_000_000_000_000,
-            mintingLimitMaximum: 600_000_000_000_000_000_000,
+            mintingLimitMinimum: 100e18,
+            mintingLimitMaximum: 600e18,
             mintingLimitBlocks: 300
         });
 
         bytes memory zeroliquidParams = abi.encodeWithSelector(ZeroLiquid.initialize.selector, initializationParams);
 
-        proxyZeroLiquid = new TransparentUpgradeableProxy(address(zeroliquidLogic), proxyAdmin, zeroliquidParams);
+        proxyZeroLiquid = new TransparentUpgradeableProxy(zeroliquidLogicAddress, proxyAdmin, zeroliquidParams);
 
         vm.stopBroadcast();
     }
