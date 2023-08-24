@@ -152,10 +152,10 @@ interface IZeroLiquidState {
     /// @notice Gets information about the account owned by `owner`.
     ///
     /// @param owner The address that owns the account.
-    /// @param yieldToken The address of the yield token to query
     ///
     /// @return debt            The unrealized amount of debt that the account had incurred.
-    function getAccount(address owner, address yieldToken) external view returns (int256 debt);
+    /// @return depositedTokens The yield tokens that the owner has deposited.
+    function accounts(address owner) external view returns (int256 debt, address[] memory depositedTokens);
 
     /// @notice Gets information about a yield token position for the account owned by `owner`.
     ///

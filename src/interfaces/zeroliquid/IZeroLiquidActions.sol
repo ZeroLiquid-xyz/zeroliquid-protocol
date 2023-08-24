@@ -249,10 +249,9 @@ interface IZeroLiquidActions {
     /// @notice ZeroLiquid(ZeroLiquidAddress).mint(amtDebt, msg.sender);
     /// @notice ```
     ///
-    /// @param yieldToken The yield token against the debt is to be minted
     /// @param amount     The amount of tokens to mint.
     /// @param recipient  The address of the recipient.
-    function mint(address yieldToken, uint256 amount, address recipient) external;
+    function mint(uint256 amount, address recipient) external;
 
     /// @notice Mint `amount` debt tokens from the account owned by `owner` to `recipient`.
     ///
@@ -271,11 +270,10 @@ interface IZeroLiquidActions {
     /// @notice ZeroLiquid(ZeroLiquidAddress).mintFrom(msg.sender, amtDebt, msg.sender);
     /// @notice ```
     ///
-    /// @param yieldToken The yield token against the debt is to be minted
     /// @param owner      The address of the owner of the account to mint from.
     /// @param amount     The amount of tokens to mint.
     /// @param recipient  The address of the recipient.
-    function mintFrom(address yieldToken, address owner, uint256 amount, address recipient) external;
+    function mintFrom(address owner, uint256 amount, address recipient) external;
 
     /// @notice Burn `amount` debt tokens to credit the account owned by `recipient`.
     ///
@@ -294,12 +292,11 @@ interface IZeroLiquidActions {
     /// @notice ZeroLiquid(ZeroLiquidAddress).burn(amtBurn, msg.sender);
     /// @notice ```
     ///
-    /// @param yieldToken The yield token against the debt is to be burned
     /// @param amount     The amount of tokens to burn.
     /// @param recipient  The address of the recipient.
     ///
     /// @return amountBurned The amount of tokens that were burned.
-    function burn(address yieldToken, uint256 amount, address recipient) external returns (uint256 amountBurned);
+    function burn(uint256 amount, address recipient) external returns (uint256 amountBurned);
 
     /// @notice Repay `amount` debt using `underlyingToken` to credit the account owned by `recipient`.
     ///
@@ -320,14 +317,12 @@ interface IZeroLiquidActions {
     /// @notice ZeroLiquid(ZeroLiquidAddress).repay(weth, amtRepay, msg.sender);
     /// @notice ```
     ///
-    /// @param yieldToken      The yield token against the debt is to be repaid
     /// @param underlyingToken The address of the underlying token to repay.
     /// @param amount          The amount of the underlying token to repay.
     /// @param recipient       The address of the recipient which will receive credit.
     ///
     /// @return amountRepaid The amount of tokens that were repaid.
     function repay(
-        address yieldToken,
         address underlyingToken,
         uint256 amount,
         address recipient
