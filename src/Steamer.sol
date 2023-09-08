@@ -230,10 +230,10 @@ contract Steamer is ISteamer, Initializable, ReentrancyGuardUpgradeable, AccessC
 
     /// @inheritdoc ISteamer
     function exchange(uint256 amount) external override nonReentrant onlyBuffer notPaused {
-        uint256 normaizedAmount = _normalizeUnderlyingTokensToDebt(amount);
+        uint256 normalizedAmount = _normalizeUnderlyingTokensToDebt(amount);
 
         if (totalUnexchanged == 0) {
-            totalBuffered += normaizedAmount;
+            totalBuffered += normalizedAmount;
             emit Exchange(msg.sender, amount);
             return;
         }
@@ -248,7 +248,7 @@ contract Steamer is ISteamer, Initializable, ReentrancyGuardUpgradeable, AccessC
             examineTick: cache.ticksHead,
             totalUnexchanged: cache.totalUnexchanged,
             satisfiedTick: cache.satisfiedTick,
-            distributeAmount: normaizedAmount,
+            distributeAmount: normalizedAmount,
             accumulatedWeight: current.accumulatedWeight,
             maximumWeight: FixedPointMath.encode(0),
             dustedWeight: FixedPointMath.encode(0)
