@@ -25,6 +25,7 @@ import { ISteamer } from "./../../src/interfaces/steamer/ISteamer.sol";
 import { SafeERC20 } from "./../../src/libraries/SafeERC20.sol";
 import { IChainlinkOracle } from "./../../src/interfaces/external/chainlink/IChainlinkOracle.sol";
 import { RocketDepositPoolInterface } from "src/test/mocks/RocketDepositPoolInterface.sol";
+import { ZeroLiquidToken } from "src/ZeroLiquidToken.sol";
 import { SteamerBuffer } from "src/SteamerBuffer.sol";
 import { IWETHGateway } from "src/interfaces/IWETHGateway.sol";
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
@@ -44,6 +45,7 @@ contract ZeroLiquidScript is Script {
     // address constant unshETH = 0xD99351D32EC8C067Ea1c8Bbfb41bD27836E871ce;
 
     IZeroLiquidToken constant zeroliquidtoken = IZeroLiquidToken(0x888ED3D6Af5418098C16B8445caeea2081399636);
+    ZeroLiquidToken constant zeroliquidtokenContract = ZeroLiquidToken(0x888ED3D6Af5418098C16B8445caeea2081399636);
     IZeroLiquid constant zeroliquid = IZeroLiquid(0x19E0503a040CF7283D46ed091Caf35eBEeC84270);
     ISteamer constant steamer = ISteamer(0x4875a0c9ED805FdE1751aC328b3ad6CB5b170087);
     ISteamerBuffer constant steamerBuffer = ISteamerBuffer(0x74826F19Dd0063823D47d9404Fb5Dfc3473Ccd78);
@@ -57,7 +59,7 @@ contract ZeroLiquidScript is Script {
     // IChainlinkOracle constant oracleStethUsd = IChainlinkOracle(0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e);
 
     function run() external {
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_ADMIN");
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_DEPLOYER");
         vm.startBroadcast(deployerPrivateKey);
 
         // ############################################################################### CONFIGURATIONS ##############
@@ -75,8 +77,6 @@ contract ZeroLiquidScript is Script {
         //     })
         // );
         // zeroliquid.setUnderlyingTokenEnabled(address(weth), true);
-
-        // // zeroliquid.configureLiquidationLimit(address(weth), 100e18, 10);
 
         // zeroliquid.addYieldToken(
         //     address(wstETH),
@@ -114,12 +114,28 @@ contract ZeroLiquidScript is Script {
         // steamerBuffer.setFlowRate(address(weth), 20_000_000_000_000_000);
         // wethGateway.refreshAllowance(address(zeroliquid));
 
-        // ############################################################################### VIEW TRANSACTIONS ###########
+        // ################################################################################### VIEW CONFIGS ###########
+
+        // console.log(
+        //     "zETH ==> ADMIN: %s, SENTINEL: %s",
+        //     zeroliquidtokenContract.hasRole(keccak256("ADMIN"), deployer),
+        //     zeroliquidtokenContract.hasRole(keccak256("SENTINEL"), deployer)
+        // );
+
+        // zeroliquidtokenContract.renounceRole(keccak256("ADMIN"), deployer);
+        // zeroliquidtokenContract.renounceRole(keccak256("SENTINEL"), deployer);
+
         // address[] memory underlyingTokens = zeroliquid.getSupportedUnderlyingTokens();
         // console.log("Supported Underlying Token ==> %s", underlyingTokens[0]);
         // address[] memory yieldtokens = zeroliquid.getSupportedYieldTokens();
         // console.log("Supported Yield Token ==> %s, %s, %s", yieldtokens[0], yieldtokens[1], yieldtokens.length);
         // console.log("minimumCollateralization ==> %s", zeroliquid.minimumCollateralization());
+
+        // ################################################################################## VIEW POSITIONS ###########
+
+        // console.log("Price wstETH ==> %s", wstETHAdapter.price());
+        // console.log("Price rETH ==> %s", rETHAdapter.price()); // 1066666666666666666 = total pooled ether / rETH
+        // // supply
 
         // console.log(
         //     "Balance wstETH ==> %s, rETH ==> %s, zETH ==> %s",
@@ -127,11 +143,6 @@ contract ZeroLiquidScript is Script {
         //     IERC20(address(rETH)).balanceOf(deployer),
         //     IERC20(address(zeroliquidtoken)).balanceOf(deployer)
         // );
-
-        // console.log("Price wstETH ==> %s", wstETHAdapter.price());
-        // console.log("Price rETH ==> %s", rETHAdapter.price()); // 1066666666666666666 = total pooled ether / rETH
-        // // supply
-
         // (uint256 sharesWSTETH, uint256 lastAccruedWeightWSTETH) = zeroliquid.positions(deployer, address(wstETH));
         // (uint256 sharesRETH, uint256 lastAccruedWeightRETH) = zeroliquid.positions(deployer, address(rETH));
         // console.log("wstETH ==> Shares: %s, LastAccruedWeight: %s", sharesWSTETH, lastAccruedWeightWSTETH);
@@ -201,75 +212,37 @@ contract ZeroLiquidScript is Script {
         //     steamerBuffer.getTotalCredit(address(wstETH)),
         //     steamerBuffer.getTotalCredit(address(rETH))
         // );
-        console.log("TotalUnderlyingBuffered ==> %s", steamerBuffer.getTotalUnderlyingBuffered(address(weth)));
-        console.log("lastFlowrateUpdate ==> %s", steamerBufferContract.lastFlowrateUpdate(address(weth)));
+        // console.log("TotalUnderlyingBuffered ==> %s", steamerBuffer.getTotalUnderlyingBuffered(address(weth)));
+        // console.log("lastFlowrateUpdate ==> %s", steamerBufferContract.lastFlowrateUpdate(address(weth)));
 
-        console.log(
-            "getAvailableFlow ==> %s, flowAvailable ==> %s, flowRate ==> %s",
-            steamerBuffer.getAvailableFlow(address(weth)),
-            steamerBufferContract.flowAvailable(address(weth)),
-            steamerBufferContract.flowRate(address(weth))
-        );
+        // console.log(
+        //     "getAvailableFlow ==> %s, flowAvailable ==> %s, flowRate ==> %s",
+        //     steamerBuffer.getAvailableFlow(address(weth)),
+        //     steamerBufferContract.flowAvailable(address(weth)),
+        //     steamerBufferContract.flowRate(address(weth))
+        // );
         // console.log("Weight ==> %s", steamerBuffer.getWeight(address(weth)));
         // steamerBuffer.exchange(address(weth));
 
         // ############################################################################### STEAMER #####################
 
-        // steamer.withdraw(3e17, user_m);
+        // console.log(
+        //     "UnexchangedBalance => %s, ExchangedBalance => %s, ClaimableBalance => %s",
+        //     steamer.getUnexchangedBalance(deployer),
+        //     steamer.getExchangedBalance(deployer),
+        //     steamer.getClaimableBalance(deployer)
+        // );
+        // console.log(
+        //     "Deposited => %s, Withdrawable => %s, Claimable => %s",
+        //     (steamer.getExchangedBalance(deployer) + steamer.getUnexchangedBalance(deployer)),
+        //     steamer.getUnexchangedBalance(deployer),
+        //     steamer.getClaimableBalance(deployer)
+        // );
 
-        // #############################################################################################################
-
-        // IZeroLiquid.UnderlyingTokenParams memory params = zeroliquid.getUnderlyingTokenParameters(address(weth));
-        // console.log("conversionFactor ==> %s", params.conversionFactor);
-        // console.log("minimumCollateralization ==> %s", zeroliquid.minimumCollateralization());
-
-        // console.log("yieldTokenPrice ==> %s", yieldTokenPrice(address(wstETH)));
-        // console.log("minimumAmountOut ==> %s", minimumAmountOut(1e18, address(wstETH)));
-        // zeroliquid.depositUnderlying(unshETH, 1e18, user_1_testnet, minimumAmountOut(1e18, address(unshETH)));
-
-        // (int256 debt_1,) = zeroliquid.accounts(user_1);
-        // console.logInt(debt_1);
-        // (uint256 shares, uint256 lastAccruedWeight) = zeroliquid.positions(user_1, address(wstETH));
-        // console.log("Shares ==> %s, LastAccruedWeight ==> %s", shares, lastAccruedWeight);
-        // uint256 amountUnderlyingToken = zeroliquid.convertSharesToUnderlyingTokens(address(wstETH), shares);
-        // console.log("amountUnderlyingToken ==> %s", amountUnderlyingToken);
-        // shares));
-        // zeroliquid.mint(100_000_000_000_000_000, user_1_testnet);
-
-        // (int256 debt_1,) = zeroliquid.accounts(user_1);
-        // (int256 debt_2,) = zeroliquid.accounts(user_2);
-        // console.logInt(debt_1);
-        // console.logInt(debt_2);
-        // console.log("PRICE ==> %s", wstETHAdapter.price());
-
-        // console.log("yieldTokenPrice ==> %s", yieldTokenPrice(address(wstETH)));
-        // console.log("minimumAmountOut ==> %s", minimumAmountOut(1.6e18, address(wstETH)));
-        // zeroliquid.harvest(address(wstETH), minimumAmountOut(10e18, address(wstETH)));
-
-        // (,, uint256 repayLimit) = zeroliquid.getRepayLimitInfo(address(weth));
-        // console.log("repayLimit", repayLimit);
-        // SafeERC20.safeApprove(address(weth), address(zeroliquid), 1e17);
-        // zeroliquid.repay(address(weth), 1e17, user_1_testnet);
-
-        // zeroliquid.burn(5e17, user_1);
-
-        // (,, uint256 liquidationLimit) = zeroliquid.getLiquidationLimitInfo(address(weth));
-        // console.log("liquidationLimit ==> %s", liquidationLimit);
-
-        // (uint256 shares_1_testnet,) = zeroliquid.positions(user_1_testnet, address(unshETH));
-        // console2.log(shares_1_testnet);
-        // console.log("minimumAmountOut ==> %s", minimumAmountOut(5e17, address(wstETH)));
-        // zeroliquid.liquidate(address(unshETH), 1e18, minimumAmountOut(1e18, address(unshETH)));
-
-        // (uint256 shares_1_testnet,) = zeroliquid.positions(user_1_testnet, address(unshETH));
-        // console2.log(shares_1_testnet);
-        // (uint256 shares_2,) = zeroliquid.positions(user_2, address(wstETH));
-        // console2.log(shares_2);
-        // uint256 shares_user_1_testnet = 1_000_000_000_000_000_000;
-        // zeroliquid.withdrawUnderlying(address(unshETH), shares_user_1_testnet, user_1_testnet,
-        // shares_user_1_testnet);
-
-        // =========================
+        // SafeERC20.safeApprove(address(zeroliquidtoken), address(steamer), 2e16);
+        // steamer.deposit(2e16, deployer);
+        // steamer.withdraw(2e16, deployer);
+        // steamer.claim(1e18, deployer);
 
         vm.stopBroadcast();
     }

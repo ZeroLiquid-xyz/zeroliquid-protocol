@@ -12,7 +12,7 @@ contract Deployment is Script {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_DEPLOYER");
         vm.startBroadcast(deployerPrivateKey);
 
-        wethGateway = new WETHGateway(0x984762407b20365A769cd59F1e24576468db5AFB);
+        wethGateway = new WETHGateway(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
 
         vm.stopBroadcast();
     }

@@ -11,10 +11,14 @@ import { Steamer } from "./../../src/Steamer.sol";
 import { SteamerBuffer } from "./../../src/SteamerBuffer.sol";
 
 contract Deployment is Script {
-    address constant admin = 0xbbfA751823F04c509346d14E3ec1182405ce2Dc4;
-    address constant proxyAdmin = 0xBD35220FDD6dB91d64dca714FEEf9C6614c448a9;
-    IZeroLiquidToken constant zeroliquidtoken = IZeroLiquidToken(0x888ED3D6Af5418098C16B8445caeea2081399636);
-    IWETH9 constant weth = IWETH9(0x984762407b20365A769cd59F1e24576468db5AFB);
+    address constant admin = 0xAF8794cDA6Aa82e7E0589B0684a24A47C161f9e2;
+    address constant proxyAdmin = 0x9FA1B904ba1E29ed45E183EFE6a47aCDC2d15eFA;
+    IZeroLiquidToken constant zeroliquidtoken = IZeroLiquidToken(0x776280F68aD33c4d49e6846507B7dBaf7811c89F);
+    IWETH9 constant weth = IWETH9(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
+
+    address constant steamerBufferLogicAddress = 0x2AF772E90398B6Eca5bfb4c36d20bEAb71979938;
+    address constant steamerLogicAddress = 0x81373f4E8D0BD48bbE8842E9eE16dB7B60c20613;
+    address constant steamerBufferProxyAddress = 0xc429B3aABa6daC296BD5b6d42513683f1f22C5b1;
 
     Steamer steamer;
     SteamerBuffer steamerBuffer;
@@ -29,27 +33,27 @@ contract Deployment is Script {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_DEPLOYER");
         vm.startBroadcast(deployerPrivateKey);
 
-        steamerBufferLogic = new SteamerBuffer();
-        steamerLogic = new Steamer();
+        // steamerBufferLogic = new SteamerBuffer();
+        // steamerLogic = new Steamer();
 
-        bytes memory steamBufParams =
-            abi.encodeWithSelector(SteamerBuffer.initialize.selector, admin, address(zeroliquidtoken));
+        // bytes memory steamBufParams =
+        //     abi.encodeWithSelector(SteamerBuffer.initialize.selector, admin, address(zeroliquidtoken));
 
-        proxySteamerBuffer = new TransparentUpgradeableProxy(
-            address(steamerBufferLogic),
-            proxyAdmin,
-            steamBufParams
-        );
+        // proxySteamerBuffer = new TransparentUpgradeableProxy(
+        //     steamerBufferLogicAddress,
+        //     proxyAdmin,
+        //     steamBufParams
+        // );
 
-        steamerBuffer = SteamerBuffer(address(proxySteamerBuffer));
+        // steamerBuffer = SteamerBuffer(steamerBufferProxyAddress);
 
-        bytes memory steamParams = abi.encodeWithSelector(
-            Steamer.initialize.selector, address(zeroliquidtoken), address(weth), address(steamerBuffer)
-        );
+        // bytes memory steamParams = abi.encodeWithSelector(
+        //     Steamer.initialize.selector, address(zeroliquidtoken), address(weth), steamerBufferProxyAddress
+        // );
 
-        proxySteamer = new TransparentUpgradeableProxy(address(steamerLogic), proxyAdmin, steamParams);
+        // proxySteamer = new TransparentUpgradeableProxy(address(steamerLogicAddress), proxyAdmin, steamParams);
 
-        steamer = Steamer(address(proxySteamer));
+        // steamer = Steamer(address(proxySteamer));
 
         vm.stopBroadcast();
     }

@@ -18,13 +18,13 @@ import { IWstETH } from "./../../src/interfaces/external/lido/IWstETH.sol";
 import { SafeERC20 } from "./../../src/libraries/SafeERC20.sol";
 
 contract Deployment is Script {
-    IZeroLiquid constant zeroliquid = IZeroLiquid(0x19E0503a040CF7283D46ed091Caf35eBEeC84270);
-    IChainlinkOracle constant oracleStethUsd = IChainlinkOracle(0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e);
-    IChainlinkOracle constant oracleEthUsd = IChainlinkOracle(0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e);
-    IStETH constant stETH = IStETH(0x75AeF7E517dec2B37322Db16d490990844f7c3F9);
-    IWstETH constant wstETH = IWstETH(0x3A4bD8Bf2343E6F636d35b25B9CebBC1DB6BbEC5);
-    IWETH9 constant weth = IWETH9(0x984762407b20365A769cd59F1e24576468db5AFB);
-    IStableSwap2Pool constant curvePool = IStableSwap2Pool(0x578BB2E3E39e7260b3f6a81a8C6460Da5ad04d1C);
+    IZeroLiquid constant zeroliquid = IZeroLiquid(0x0246e28C6B161764492E54CBF852e28A4DA2D672);
+    IChainlinkOracle constant oracleStethUsd = IChainlinkOracle(0xCfE54B5cD566aB89272946F602D76Ea879CAb4a8);
+    IChainlinkOracle constant oracleEthUsd = IChainlinkOracle(0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);
+    IStETH constant stETH = IStETH(0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84);
+    IWstETH constant wstETH = IWstETH(0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0);
+    IWETH9 constant weth = IWETH9(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
+    IStableSwap2Pool constant curvePool = IStableSwap2Pool(0xDC24316b9AE028F1497c275EB9192a3Ea0f67022);
 
     WstETHAdapter adapter;
 
