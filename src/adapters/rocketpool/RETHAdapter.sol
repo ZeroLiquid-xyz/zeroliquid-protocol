@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import { IERC20 } from "../../../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
-import { IllegalArgument, IllegalState, Unauthorized, UnsupportedOperation } from "../../base/ErrorMessages.sol";
+import { Unauthorized, UnsupportedOperation } from "../../base/ErrorMessages.sol";
 
 import { MutexLock } from "../../base/MutexLock.sol";
 
@@ -13,7 +13,6 @@ import { RocketPool } from "../../libraries/RocketPool.sol";
 import { ITokenAdapter } from "../../interfaces/ITokenAdapter.sol";
 import { IWETH9 } from "../../interfaces/external/IWETH9.sol";
 import { IRETH } from "../../interfaces/external/rocketpool/IRETH.sol";
-import { IStableSwap2Pool } from "../../interfaces/external/curve/IStableSwap2Pool.sol";
 import { IRocketStorage } from "../../interfaces/external/rocketpool/IRocketStorage.sol";
 import { ISwapRouter } from "../../interfaces/external/uniswap/ISwapRouter.sol";
 
