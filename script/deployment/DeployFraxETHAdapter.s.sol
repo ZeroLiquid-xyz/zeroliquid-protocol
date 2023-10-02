@@ -39,7 +39,7 @@ contract Deployment is Script {
             underlyingToken: address(weth),
             curvePool:       address(curvePool),
             curvePoolEthIndex:    0,
-            curvePoolfrxEthIndex:  1
+            curvePoolFrxEthIndex:  1
         }));
 
         vm.stopBroadcast();

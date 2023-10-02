@@ -21,7 +21,7 @@ struct InitializationParams {
     address underlyingToken;
     address curvePool;
     uint128 curvePoolEthIndex;
-    uint128 curvePoolfrxEthIndex;
+    uint128 curvePoolFrxEthIndex;
 }
 
 /// @title  StakedFraxETHAdapter
@@ -36,13 +36,13 @@ contract StakedFraxETHAdapter is ITokenAdapter, MutexLock {
     address public immutable override underlyingToken;
     address public immutable curvePool;
     uint128 public immutable curvePoolEthIndex;
-    uint128 public immutable curvePoolfrxEthIndex;
+    uint128 public immutable curvePoolFrxEthIndex;
 
     constructor(InitializationParams memory params) {
         zeroliquid = params.zeroliquid;
         curvePool = params.curvePool;
         curvePoolEthIndex = params.curvePoolEthIndex;
-        curvePoolfrxEthIndex = params.curvePoolfrxEthIndex;
+        curvePoolFrxEthIndex = params.curvePoolFrxEthIndex;
         minter = params.minter;
         token = params.token;
         parentToken = params.parentToken;
@@ -57,7 +57,7 @@ contract StakedFraxETHAdapter is ITokenAdapter, MutexLock {
         }
 
         // Verify and make sure that the provided frxETH matches the curve pool frxETH.
-        if (IStableSwap2Pool(params.curvePool).coins(params.curvePoolfrxEthIndex) != params.parentToken) {
+        if (IStableSwap2Pool(params.curvePool).coins(params.curvePoolFrxEthIndex) != params.parentToken) {
             revert IllegalArgument("Curve pool frxETH token mismatch");
         }
     }
@@ -111,7 +111,7 @@ contract StakedFraxETHAdapter is ITokenAdapter, MutexLock {
         // Swap frxEth for eth in curve.
         SafeERC20.safeApprove(parentToken, curvePool, withdrawnFraxEth);
         uint256 received = IStableSwap2Pool(curvePool).exchange(
-            int128(uint128(curvePoolfrxEthIndex)),
+            int128(uint128(curvePoolFrxEthIndex)),
             int128(uint128(curvePoolEthIndex)),
             withdrawnFraxEth,
             0 // <- Slippage is handled upstream
