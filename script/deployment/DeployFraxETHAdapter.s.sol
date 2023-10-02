@@ -4,9 +4,9 @@ pragma solidity >=0.8.13;
 import { Script } from "forge-std/Script.sol";
 
 import {
-    FraxETHAdapter,
+    StakedFraxETHAdapter,
     InitializationParams as AdapterInitializationParams
-} from "./../../src/adapters/frax/FraxETHAdapter.sol";
+} from "./../../src/adapters/frax/StakedFraxETHAdapter.sol";
 
 import { IZeroLiquid } from "./../../src/interfaces/IZeroLiquid.sol";
 import { IWETH9 } from "./../../src/interfaces/external/IWETH9.sol";
@@ -25,13 +25,13 @@ contract Deployment is Script {
     address constant weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
     IStableSwap2Pool constant curvePool = IStableSwap2Pool(0xa1F8A6807c402E4A15ef4EBa36528A3FED24E577);
 
-    FraxETHAdapter adapter;
+    StakedFraxETHAdapter adapter;
 
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_DEPLOYER");
         vm.startBroadcast(deployerPrivateKey);
 
-        adapter = new FraxETHAdapter(AdapterInitializationParams({
+        adapter = new StakedFraxETHAdapter(AdapterInitializationParams({
             zeroliquid:      address(zeroliquid),
             token:           address(sfrxETH),
             minter:          address(minter),

@@ -1,19 +1,17 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.13;
 
-import { IllegalState } from "../../base/Errors.sol";
+import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+
 import { IllegalArgument, Unauthorized } from "../../base/ErrorMessages.sol";
+import { SafeERC20 } from "../../libraries/SafeERC20.sol";
+import { MutexLock } from "../../base/MutexLock.sol";
 
 import { IFraxMinter } from "../../interfaces/external/frax/IFraxMinter.sol";
-import { IFraxEth } from "../../interfaces/external/frax/IFraxEth.sol";
 import { IStakedFraxEth } from "../../interfaces/external/frax/IStakedFraxEth.sol";
 import { IStableSwap2Pool } from "../../interfaces/external/curve/IStableSwap2Pool.sol";
 import { ITokenAdapter } from "../../interfaces/ITokenAdapter.sol";
 import { IWETH9 } from "../../interfaces/external/IWETH9.sol";
-
-import { MutexLock } from "../../base/MutexLock.sol";
-
-import "../../libraries/TokenUtils.sol";
 
 struct InitializationParams {
     address zeroliquid;
@@ -26,10 +24,9 @@ struct InitializationParams {
     uint128 curvePoolfrxEthIndex;
 }
 
-/// @title  FraxETHAdapter
+/// @title  StakedFraxETHAdapter
 /// @author ZeroLiquid
-contract FraxETHAdapter is ITokenAdapter, MutexLock {
-    uint256 private constant MAXIMUM_SLIPPAGE = 10_000;
+contract StakedFraxETHAdapter is ITokenAdapter, MutexLock {
     string public constant override version = "1.0.0";
 
     address public immutable zeroliquid;
@@ -50,6 +47,19 @@ contract FraxETHAdapter is ITokenAdapter, MutexLock {
         token = params.token;
         parentToken = params.parentToken;
         underlyingToken = params.underlyingToken;
+
+        // Verify and make sure that the provided ETH matches the curve pool ETH.
+        if (
+            IStableSwap2Pool(params.curvePool).coins(params.curvePoolEthIndex)
+                != 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE
+        ) {
+            revert IllegalArgument("Curve pool ETH token mismatch");
+        }
+
+        // Verify and make sure that the provided frxETH matches the curve pool frxETH.
+        if (IStableSwap2Pool(params.curvePool).coins(params.curvePoolfrxEthIndex) != params.parentToken) {
+            revert IllegalArgument("Curve pool frxETH token mismatch");
+        }
     }
 
     /// @dev Checks that the message sender is the zeroliquid that the adapter is bound to.
@@ -73,7 +83,7 @@ contract FraxETHAdapter is ITokenAdapter, MutexLock {
 
     /// @inheritdoc ITokenAdapter
     function wrap(uint256 amount, address recipient) external lock onlyZeroLiquid returns (uint256) {
-        TokenUtils.safeTransferFrom(underlyingToken, msg.sender, address(this), amount);
+        SafeERC20.safeTransferFrom(underlyingToken, msg.sender, address(this), amount);
 
         // Unwrap the WETH into ETH.
         IWETH9(underlyingToken).withdraw(amount);
@@ -83,23 +93,23 @@ contract FraxETHAdapter is ITokenAdapter, MutexLock {
         IFraxMinter(minter).submit{ value: amount }();
         uint256 mintedFraxEth = IERC20(parentToken).balanceOf(address(this)) - startingFraxEthBalance;
 
-        TokenUtils.safeApprove(parentToken, token, mintedFraxEth);
+        SafeERC20.safeApprove(parentToken, token, mintedFraxEth);
         return IStakedFraxEth(token).deposit(mintedFraxEth, recipient);
     }
 
     /// @inheritdoc ITokenAdapter
     function unwrap(uint256 amount, address recipient) external lock onlyZeroLiquid returns (uint256) {
-        TokenUtils.safeTransferFrom(token, msg.sender, address(this), amount);
+        SafeERC20.safeTransferFrom(token, msg.sender, address(this), amount);
 
         // Withdraw frxEth from  sfrxEth.
         uint256 startingFraxEthBalance = IERC20(parentToken).balanceOf(address(this));
         IStakedFraxEth(token).withdraw(
-            amount * this.price() / 10 ** TokenUtils.expectDecimals(token), address(this), address(this)
+            amount * this.price() / 10 ** SafeERC20.expectDecimals(token), address(this), address(this)
         );
         uint256 withdrawnFraxEth = IERC20(parentToken).balanceOf(address(this)) - startingFraxEthBalance;
 
         // Swap frxEth for eth in curve.
-        TokenUtils.safeApprove(parentToken, curvePool, withdrawnFraxEth);
+        SafeERC20.safeApprove(parentToken, curvePool, withdrawnFraxEth);
         uint256 received = IStableSwap2Pool(curvePool).exchange(
             int128(uint128(curvePoolfrxEthIndex)),
             int128(uint128(curvePoolEthIndex)),
@@ -111,7 +121,7 @@ contract FraxETHAdapter is ITokenAdapter, MutexLock {
         IWETH9(underlyingToken).deposit{ value: received }();
 
         // Transfer the tokens to the recipient.
-        TokenUtils.safeTransfer(underlyingToken, recipient, received);
+        SafeERC20.safeTransfer(underlyingToken, recipient, received);
 
         return received;
     }

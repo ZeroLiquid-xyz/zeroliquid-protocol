@@ -5,6 +5,8 @@ interface IStakedFraxEth {
 
     function convertToShares(uint256 assets) external view returns (uint256);
 
+    function pricePerShare() external view returns (uint256);
+
     function deposit(uint256 assets, address receiver) external returns (uint256);
 
     function withdraw(uint256 assets, address receiver, address owner) external returns (uint256);
