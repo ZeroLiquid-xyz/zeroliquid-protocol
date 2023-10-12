@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
-import { IllegalArgument, IllegalState, Unauthorized } from "../../base/ErrorMessages.sol";
+import { IllegalArgument, Unauthorized } from "../../base/ErrorMessages.sol";
 import { MutexLock } from "../../base/MutexLock.sol";
 
 import { SafeERC20 } from "../../libraries/SafeERC20.sol";
@@ -23,7 +23,6 @@ struct InitializationParams {
     address curvePool;
     uint256 ethPoolIndex;
     uint256 unshEthPoolIndex;
-    address referral;
 }
 
 contract UnshETHAdapter is ITokenAdapter, MutexLock {
@@ -37,7 +36,6 @@ contract UnshETHAdapter is ITokenAdapter, MutexLock {
     address public immutable curvePool;
     uint256 public immutable ethPoolIndex;
     uint256 public immutable unshEthPoolIndex;
-    address public immutable referral;
 
     constructor(InitializationParams memory params) {
         zeroliquid = params.zeroliquid;
@@ -48,7 +46,6 @@ contract UnshETHAdapter is ITokenAdapter, MutexLock {
         curvePool = params.curvePool;
         ethPoolIndex = params.ethPoolIndex;
         unshEthPoolIndex = params.unshEthPoolIndex;
-        referral = params.referral;
 
         // Verify and make sure that the provided ETH matches the curve pool ETH.
         if (IStableSwap2Pool(params.curvePool).coins(params.ethPoolIndex) != 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)
@@ -56,7 +53,7 @@ contract UnshETHAdapter is ITokenAdapter, MutexLock {
             revert IllegalArgument("Curve pool ETH token mismatch");
         }
 
-        // Verify and make sure that the provided stETH matches the curve pool stETH.
+        // Verify and make sure that the provided unshETH matches the curve pool unshETH.
         if (IStableSwap2Pool(params.curvePool).coins(params.unshEthPoolIndex) != params.token) {
             revert IllegalArgument("Curve pool unshETH token mismatch");
         }

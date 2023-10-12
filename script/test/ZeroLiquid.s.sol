@@ -42,24 +42,25 @@ contract ZeroLiquidScript is Script {
     IRETH constant rETH = IRETH(0x3cD99D149C2A7677D920cEDdeA865129e276D5e4);
     RocketDepositPoolInterface constant rocketDepositPool =
         RocketDepositPoolInterface(0x7C61aa35b5578248267d2fAEa9eD02F03A075A74);
-    // address constant unshETH = 0xD99351D32EC8C067Ea1c8Bbfb41bD27836E871ce;
+    address constant unshETH = 0x73F6132Fe65E1f20B91F35E09A25A7B603381Fa9;
 
     IZeroLiquidToken constant zeroliquidtoken = IZeroLiquidToken(0x888ED3D6Af5418098C16B8445caeea2081399636);
     ZeroLiquidToken constant zeroliquidtokenContract = ZeroLiquidToken(0x888ED3D6Af5418098C16B8445caeea2081399636);
-    IZeroLiquid constant zeroliquid = IZeroLiquid(0x19E0503a040CF7283D46ed091Caf35eBEeC84270);
+    IZeroLiquid constant zeroliquid = IZeroLiquid(0x144285De31008b2a8824574655a66DC6F845343e);
     ISteamer constant steamer = ISteamer(0x4875a0c9ED805FdE1751aC328b3ad6CB5b170087);
     ISteamerBuffer constant steamerBuffer = ISteamerBuffer(0x74826F19Dd0063823D47d9404Fb5Dfc3473Ccd78);
     SteamerBuffer constant steamerBufferContract = SteamerBuffer(0x74826F19Dd0063823D47d9404Fb5Dfc3473Ccd78);
     IWETHGateway constant wethGateway = IWETHGateway(0x92e322fF92EDe3ad6DBc85Ef53e5E13beE5f2331);
     ITokenAdapter constant wstETHAdapter = ITokenAdapter(0x472Df508a07dDBe64AA84fE8E9eAf7B7BDeA36e9);
     ITokenAdapter constant rETHAdapter = ITokenAdapter(0x0B60b240ccc513201D74c605c559627151065dE1);
+    ITokenAdapter constant unshETHAdapter = ITokenAdapter(0x180F06F624f39960576C06d5e3c5B042A43e6466);
     // ITokenAdapter constant unshETHAdapter = ITokenAdapter(0xc7F20d8Ea6bdEccD28FBA953e7E29d696038e400);
 
     // IChainlinkOracle constant oracleEthUsd = IChainlinkOracle(0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e);
     // IChainlinkOracle constant oracleStethUsd = IChainlinkOracle(0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e);
 
     function run() external {
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_DEPLOYER");
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_ADMIN");
         vm.startBroadcast(deployerPrivateKey);
 
         // ############################################################################### CONFIGURATIONS ##############
@@ -101,6 +102,18 @@ contract ZeroLiquidScript is Script {
         // );
         // zeroliquid.setYieldTokenEnabled(address(rETH), true);
         // zeroliquid.setTokenAdapter(address(rETH), address(rETHAdapter));
+
+        zeroliquid.addYieldToken(
+            address(unshETH),
+            IZeroLiquidAdminActions.YieldTokenConfig({
+                adapter: address(unshETHAdapter),
+                maximumLoss: 100,
+                maximumExpectedValue: 100e18,
+                creditUnlockBlocks: 7200
+            })
+        );
+        zeroliquid.setYieldTokenEnabled(address(unshETH), true);
+        zeroliquid.setTokenAdapter(address(unshETH), address(unshETHAdapter));
 
         // SEND USING OWNER OF ZEROLIQUID TOKEN
         // zeroliquidtoken.setWhitelist(address(zeroliquid), true);
