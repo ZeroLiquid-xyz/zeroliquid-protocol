@@ -36,31 +36,32 @@ contract ZeroLiquidScript is Script {
     address constant admin = 0xbbfA751823F04c509346d14E3ec1182405ce2Dc4;
     address constant user_m = 0x92cd1E7EC07B407027e8F667eB0C7354219f2433;
 
-    IWETH9 constant weth = IWETH9(0x984762407b20365A769cd59F1e24576468db5AFB);
-    IStETH constant stETH = IStETH(0x75AeF7E517dec2B37322Db16d490990844f7c3F9);
-    IWstETH constant wstETH = IWstETH(0x3A4bD8Bf2343E6F636d35b25B9CebBC1DB6BbEC5);
-    IRETH constant rETH = IRETH(0x3cD99D149C2A7677D920cEDdeA865129e276D5e4);
+    IWETH9 constant weth = IWETH9(0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6);
+    IStETH constant stETH = IStETH(0x2bAf823128195338F48a60FcE4D063C02c609B2b);
+    IWstETH constant wstETH = IWstETH(0x89504631947b04d0A8808dC6be355FEC72F808cd);
     RocketDepositPoolInterface constant rocketDepositPool =
-        RocketDepositPoolInterface(0x7C61aa35b5578248267d2fAEa9eD02F03A075A74);
-    address constant unshETH = 0x73F6132Fe65E1f20B91F35E09A25A7B603381Fa9;
+        RocketDepositPoolInterface(0x6d526477284A33BF00EAE7f8F472609E88FbCE29);
+    IRETH constant rETH = IRETH(0x721C80D35AB07E3823D07723615cE40df2e063b0);
+    address constant sfrxETH = 0xbd127769D275133DAfaDB512d50804a916a0152E;
+    address constant unshETH = 0x74173e088D9F540F7f55CE9c61f9186cF9D62D81;
 
-    IZeroLiquidToken constant zeroliquidtoken = IZeroLiquidToken(0x888ED3D6Af5418098C16B8445caeea2081399636);
-    ZeroLiquidToken constant zeroliquidtokenContract = ZeroLiquidToken(0x888ED3D6Af5418098C16B8445caeea2081399636);
+    IZeroLiquidToken constant zeroliquidtoken = IZeroLiquidToken(0x7A6f697d65B216Fad49322ec40eEeeDD02037057);
+    ZeroLiquidToken constant zeroliquidtokenContract = ZeroLiquidToken(0x7A6f697d65B216Fad49322ec40eEeeDD02037057);
     IZeroLiquid constant zeroliquid = IZeroLiquid(0x144285De31008b2a8824574655a66DC6F845343e);
-    ISteamer constant steamer = ISteamer(0x4875a0c9ED805FdE1751aC328b3ad6CB5b170087);
-    ISteamerBuffer constant steamerBuffer = ISteamerBuffer(0x74826F19Dd0063823D47d9404Fb5Dfc3473Ccd78);
-    SteamerBuffer constant steamerBufferContract = SteamerBuffer(0x74826F19Dd0063823D47d9404Fb5Dfc3473Ccd78);
-    IWETHGateway constant wethGateway = IWETHGateway(0x92e322fF92EDe3ad6DBc85Ef53e5E13beE5f2331);
-    ITokenAdapter constant wstETHAdapter = ITokenAdapter(0x472Df508a07dDBe64AA84fE8E9eAf7B7BDeA36e9);
-    ITokenAdapter constant rETHAdapter = ITokenAdapter(0x0B60b240ccc513201D74c605c559627151065dE1);
-    ITokenAdapter constant unshETHAdapter = ITokenAdapter(0x180F06F624f39960576C06d5e3c5B042A43e6466);
-    // ITokenAdapter constant unshETHAdapter = ITokenAdapter(0xc7F20d8Ea6bdEccD28FBA953e7E29d696038e400);
+    ISteamer constant steamer = ISteamer(0xA688895C3473a2248ee48009c4FaB2E3E3054214);
+    ISteamerBuffer constant steamerBuffer = ISteamerBuffer(0x1b01a636eaE19e5acBD85832743831a3E7296Bd8);
+    SteamerBuffer constant steamerBufferContract = SteamerBuffer(0x1b01a636eaE19e5acBD85832743831a3E7296Bd8);
+    IWETHGateway constant wethGateway = IWETHGateway(0x4F520CFE23464FAEcd9696916E28eF36442a3C95);
+    ITokenAdapter constant wstETHAdapter = ITokenAdapter(0xf0f9b38A25dc4f440188BeB19976DB3ed03ecEf3);
+    ITokenAdapter constant rETHAdapter = ITokenAdapter(0x39b8683b21f2D8EDd9f16DBCE709bDC9dC0cA833);
+    ITokenAdapter constant sfrxETHAdapter = ITokenAdapter(0x02624021b384F43b93F81e498D8F1791232c2224);
+    ITokenAdapter constant unshETHAdapter = ITokenAdapter(0x12F8FF54b6daA53f7047F354b4c6DbC88DFC1b21);
 
     // IChainlinkOracle constant oracleEthUsd = IChainlinkOracle(0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e);
     // IChainlinkOracle constant oracleStethUsd = IChainlinkOracle(0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e);
 
     function run() external {
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_ADMIN");
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_DEPLOYER");
         vm.startBroadcast(deployerPrivateKey);
 
         // ############################################################################### CONFIGURATIONS ##############
@@ -103,17 +104,17 @@ contract ZeroLiquidScript is Script {
         // zeroliquid.setYieldTokenEnabled(address(rETH), true);
         // zeroliquid.setTokenAdapter(address(rETH), address(rETHAdapter));
 
-        zeroliquid.addYieldToken(
-            address(unshETH),
-            IZeroLiquidAdminActions.YieldTokenConfig({
-                adapter: address(unshETHAdapter),
-                maximumLoss: 100,
-                maximumExpectedValue: 100e18,
-                creditUnlockBlocks: 7200
-            })
-        );
-        zeroliquid.setYieldTokenEnabled(address(unshETH), true);
-        zeroliquid.setTokenAdapter(address(unshETH), address(unshETHAdapter));
+        // zeroliquid.addYieldToken(
+        //     address(unshETH),
+        //     IZeroLiquidAdminActions.YieldTokenConfig({
+        //         adapter: address(unshETHAdapter),
+        //         maximumLoss: 100,
+        //         maximumExpectedValue: 100e18,
+        //         creditUnlockBlocks: 7200
+        //     })
+        // );
+        // zeroliquid.setYieldTokenEnabled(address(unshETH), true);
+        // zeroliquid.setTokenAdapter(address(unshETH), address(unshETHAdapter));
 
         // SEND USING OWNER OF ZEROLIQUID TOKEN
         // zeroliquidtoken.setWhitelist(address(zeroliquid), true);
@@ -151,15 +152,21 @@ contract ZeroLiquidScript is Script {
         // // supply
 
         // console.log(
-        //     "Balance wstETH ==> %s, rETH ==> %s, zETH ==> %s",
+        //     "Balance wstETH ==> %s, rETH ==> %s, sfrxETH ==> %s, unshETH ==> %s, zETH ==> %s",
         //     IERC20(address(wstETH)).balanceOf(deployer),
         //     IERC20(address(rETH)).balanceOf(deployer),
+        //     IERC20(sfrxETH).balanceOf(deployer),
+        //     IERC20(unshETH).balanceOf(deployer),
         //     IERC20(address(zeroliquidtoken)).balanceOf(deployer)
         // );
         // (uint256 sharesWSTETH, uint256 lastAccruedWeightWSTETH) = zeroliquid.positions(deployer, address(wstETH));
         // (uint256 sharesRETH, uint256 lastAccruedWeightRETH) = zeroliquid.positions(deployer, address(rETH));
+        // (uint256 sharesSfrxETH, uint256 lastAccruedWeightSfrxETH) = zeroliquid.positions(deployer, sfrxETH);
+        // (uint256 sharesUnshETH, uint256 lastAccruedWeightUnshETH) = zeroliquid.positions(deployer, unshETH);
         // console.log("wstETH ==> Shares: %s, LastAccruedWeight: %s", sharesWSTETH, lastAccruedWeightWSTETH);
         // console.log("rETH ==> Shares: %s, LastAccruedWeight: %s", sharesRETH, lastAccruedWeightRETH);
+        // console.log("sfrxETH ==> Shares: %s, LastAccruedWeight: %s", sharesSfrxETH, lastAccruedWeightSfrxETH);
+        // console.log("unshETH ==> Shares: %s, LastAccruedWeight: %s", sharesUnshETH, lastAccruedWeightUnshETH);
 
         // (int256 debt,) = zeroliquid.accounts(deployer);
         // console.log("Debt: ");
@@ -192,23 +199,28 @@ contract ZeroLiquidScript is Script {
         // SafeERC20.safeApprove(address(rETH), address(zeroliquid), 1e18);
         // zeroliquid.deposit(address(rETH), 1e18, deployer);
 
+        // DEPOSIT unshETH
+        // SafeERC20.safeApprove(unshETH, address(zeroliquid), 1e17);
+        // zeroliquid.deposit(unshETH, 1e17, deployer);
+
         // MINT DEBT
-        // zeroliquid.mint(1e17, deployer);
+        // zeroliquid.mint(5e16, deployer);
 
         // BURN DEBT
-        // SafeERC20.safeApprove(address(zeroliquidtoken), address(zeroliquid), 2e17);
-        // zeroliquid.burn(2e17, deployer);
+        // SafeERC20.safeApprove(address(zeroliquidtoken), address(zeroliquid), 62_469_764_094_996);
+        // zeroliquid.burn(62_469_764_094_996, deployer);
 
         // REPAY DEBT
         // SafeERC20.safeApprove(address(weth), address(zeroliquid), 81_935_483_870_967_748);
         // zeroliquid.repay(address(rETH), address(weth), 81_935_483_870_967_748, deployer);
 
         // LIQUIDATE
-        // zeroliquid.liquidate(address(wstETH), 1e18, minimumAmountOut(1e17, address(wstETH)));
+        // zeroliquid.liquidate(unshETH, 5e16, 0);
 
         // WITHDRAW wstETH
         // zeroliquid.withdraw(address(wstETH), 1e18, deployer);
         // zeroliquid.withdraw(address(rETH), 2e18, deployer);
+        // zeroliquid.withdraw(unshETH, 5e16, deployer);
 
         // HARVEST
         // console.log("minimumAmountOut ==> %s", minimumAmountOut(66_666_666_666_666_666, address(rETH)));
