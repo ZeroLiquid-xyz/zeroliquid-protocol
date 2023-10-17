@@ -165,10 +165,10 @@ contract UnshETHAdapter is ITokenAdapter, MutexLock {
 
     receive() external payable {
         if (
-            msg.sender != underlyingToken && msg.sender != stETHCurvePool && msg.sender != frxETHCurvePool
-                && msg.sender != cbETHCurvePool && msg.sender != ankrETHCurvePool
+            msg.sender != underlyingToken && msg.sender != rETH && msg.sender != stETHCurvePool
+                && msg.sender != frxETHCurvePool && msg.sender != cbETHCurvePool && msg.sender != ankrETHCurvePool
         ) {
-            revert Unauthorized("Payments only permitted from WETH or Curve Pools");
+            revert Unauthorized("Payments only permitted from WETH, rETH or Curve Pools");
         }
     }
 
@@ -253,7 +253,7 @@ contract UnshETHAdapter is ITokenAdapter, MutexLock {
             if (IRETH(rETH).getTotalCollateral() >= ethUnderlyingRETH) {
                 // Burn the rETH to receive ETH.
                 uint256 startingETHBalance = address(this).balance;
-                IRETH(token).burn(receivedRETH);
+                IRETH(rETH).burn(receivedRETH);
                 receivedETHFromRETH = address(this).balance - startingETHBalance;
 
                 // Wrap the ETH that we received from the burn.

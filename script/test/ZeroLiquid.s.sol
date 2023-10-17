@@ -67,7 +67,7 @@ contract ZeroLiquidScript is Script {
     ITokenAdapter constant wstETHAdapter = ITokenAdapter(0xf0f9b38A25dc4f440188BeB19976DB3ed03ecEf3);
     ITokenAdapter constant rETHAdapter = ITokenAdapter(0x39b8683b21f2D8EDd9f16DBCE709bDC9dC0cA833);
     ITokenAdapter constant sfrxETHAdapter = ITokenAdapter(0x02624021b384F43b93F81e498D8F1791232c2224);
-    ITokenAdapter constant unshETHAdapter = ITokenAdapter(0x12F8FF54b6daA53f7047F354b4c6DbC88DFC1b21);
+    ITokenAdapter constant unshETHAdapter = ITokenAdapter(0x66eE014D4B461C048790b5f2AC369243Bfd88399);
 
     ITransparentUpgradeableProxy constant proxy =
         ITransparentUpgradeableProxy(0x144285De31008b2a8824574655a66DC6F845343e);
@@ -217,11 +217,11 @@ contract ZeroLiquidScript is Script {
         // zeroliquid.deposit(address(rETH), 1e18, deployer);
 
         // DEPOSIT unshETH
-        // SafeERC20.safeApprove(unshETH, address(zeroliquid), 1e17);
-        // zeroliquid.deposit(unshETH, 1e17, deployer);
+        // SafeERC20.safeApprove(unshETH, address(zeroliquid), 6e17);
+        // zeroliquid.deposit(unshETH, 6e17, deployer);
 
         // MINT DEBT
-        // zeroliquid.mint(5e16, deployer);
+        // zeroliquid.mint(3e17, deployer);
 
         // BURN DEBT
         // SafeERC20.safeApprove(address(zeroliquidtoken), address(zeroliquid), 62_469_764_094_996);
@@ -232,7 +232,7 @@ contract ZeroLiquidScript is Script {
         // zeroliquid.repay(address(rETH), address(weth), 81_935_483_870_967_748, deployer);
 
         // LIQUIDATE
-        // zeroliquid.liquidate(unshETH, 5e16, 0);
+        // zeroliquid.liquidate(unshETH, 3e17, 0);
 
         // WITHDRAW wstETH
         // zeroliquid.withdraw(address(wstETH), 1e18, deployer);
