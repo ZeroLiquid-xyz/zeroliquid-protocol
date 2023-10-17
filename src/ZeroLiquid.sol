@@ -836,6 +836,9 @@ contract ZeroLiquid is IZeroLiquid, Initializable, Multicall, Mutex {
         // Inform the steamer that it has received tokens.
         IERC20TokenReceiver(steamer).onERC20Received(underlyingToken, amountUnderlyingTokens);
 
+        // In the case that slippage allowed by minimumAmountOut would create an undercollateralized position
+        _validate(msg.sender);
+
         emit Liquidate(msg.sender, yieldToken, underlyingToken, actualShares, credit);
 
         return actualShares;

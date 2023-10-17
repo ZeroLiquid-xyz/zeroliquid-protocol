@@ -30,6 +30,18 @@ import { SteamerBuffer } from "src/SteamerBuffer.sol";
 import { IWETHGateway } from "src/interfaces/IWETHGateway.sol";
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
+interface ITransparentUpgradeableProxy {
+    function admin() external view returns (address);
+
+    function implementation() external view returns (address);
+
+    function changeAdmin(address) external;
+
+    function upgradeTo(address) external;
+
+    function upgradeToAndCall(address, bytes memory) external payable;
+}
+
 contract ZeroLiquidScript is Script {
     uint256 constant BPS = 10_000;
     address constant deployer = 0xf9175C0149F0B6CdDE5B68A744C6cCA93a0635f5;
@@ -57,12 +69,17 @@ contract ZeroLiquidScript is Script {
     ITokenAdapter constant sfrxETHAdapter = ITokenAdapter(0x02624021b384F43b93F81e498D8F1791232c2224);
     ITokenAdapter constant unshETHAdapter = ITokenAdapter(0x12F8FF54b6daA53f7047F354b4c6DbC88DFC1b21);
 
+    ITransparentUpgradeableProxy constant proxy =
+        ITransparentUpgradeableProxy(0x144285De31008b2a8824574655a66DC6F845343e);
+
     // IChainlinkOracle constant oracleEthUsd = IChainlinkOracle(0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e);
     // IChainlinkOracle constant oracleStethUsd = IChainlinkOracle(0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e);
 
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_DEPLOYER");
         vm.startBroadcast(deployerPrivateKey);
+
+        // proxy.upgradeTo(0xC020d5B9b40C1E21e6Ca9409ABEc2a63F40C74B2);
 
         // ############################################################################### CONFIGURATIONS ##############
 
