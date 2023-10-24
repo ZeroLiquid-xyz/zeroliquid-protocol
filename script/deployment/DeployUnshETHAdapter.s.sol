@@ -13,12 +13,11 @@ import { IWETH9 } from "./../../src/interfaces/external/IWETH9.sol";
 import { IStableSwap2Pool } from "./../../src/interfaces/external/curve/IStableSwap2Pool.sol";
 
 contract Deployment is Script {
-    uint256 constant BPS = 10_000;
-    IZeroLiquid constant zeroliquid = IZeroLiquid(0x144285De31008b2a8824574655a66DC6F845343e);
-    address constant unshETH = 0x74173e088D9F540F7f55CE9c61f9186cF9D62D81;
-    IWETH9 constant weth = IWETH9(0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6);
-    address constant lsdVault = 0xA5770E0E4cB2786f64F6d4CD889A008186718f79;
-    address constant unshEthZap = 0x1C36EfE1c6Af4438046DaA342D8628D6d1549A08;
+    IZeroLiquid constant zeroliquid = IZeroLiquid(0x0246e28C6B161764492E54CBF852e28A4DA2D672);
+    address constant unshETH = 0x0Ae38f7E10A43B5b2fB064B42a2f4514cbA909ef;
+    IWETH9 constant weth = IWETH9(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
+    address constant lsdVault = 0x51A80238B5738725128d3a3e06Ab41c1d4C05C74;
+    address constant unshEthZap = 0xc258fF338322b6852C281936D4EdEff8AdfF23eE;
 
     UnshETHAdapter adapter;
 
@@ -34,24 +33,20 @@ contract Deployment is Script {
             unshEthZap: unshEthZap,
 
             // stETH
-            stETHCurvePool: 0xa6957A68b7931199208dCEBc7f08BEEDa07dd523,
+            stETHCurvePool: 0xDC24316b9AE028F1497c275EB9192a3Ea0f67022,
             ethIndexStETHCurvePool: 0,
             stETHIndexCurvePool: 1,
             // frxETH
-            frxETHCurvePool: 0x94CCbD0FA8B5507097cb13e8C5EC87F0050782a8,
+            frxETHCurvePool: 0xa1F8A6807c402E4A15ef4EBa36528A3FED24E577,
             ethIndexFrxETHCurvePool: 0,
             frxETHIndexCurvePool: 1,
-            // cbETH
-            cbETHCurvePool: 0x7c52490470ca36bF565D8C42d9f109c53960b541,
-            ethIndexCbETHCurvePool: 0,
-            cbETHIndexCurvePool: 1,
             // ankrETH
-            ankrETHCurvePool: 0x93afF571C259dF43461F47370286e17B6e30E97E,
+            ankrETHCurvePool: 0xA96A65c051bF88B4095Ee1f2451C2A9d43F53Ae2,
             ethIndexAnkrETHCurvePool: 0,
             ankrETHIndexCurvePool: 1,
             // swETH
-            swETHMaverickPool: 0x33c49FF0916CDe953f99Dbb70703198944Fc62E8,
-            maverickRouter: 0x9563Fdb01BFbF3D6c548C2C64E446cb5900ACA88
+            swETHMaverickPool: 0x0CE176E1b11A8f88a4Ba2535De80E81F88592bad,
+            maverickRouter: 0xbBF1EE38152E9D8e3470Dc47947eAa65DcA94913
         }));
 
         vm.stopBroadcast();

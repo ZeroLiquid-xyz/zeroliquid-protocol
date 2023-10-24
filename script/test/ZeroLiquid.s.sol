@@ -44,7 +44,7 @@ interface ITransparentUpgradeableProxy {
 
 contract ZeroLiquidScript is Script {
     uint256 constant BPS = 10_000;
-    address constant deployer = 0xf9175C0149F0B6CdDE5B68A744C6cCA93a0635f5;
+    address constant deployer = 0x01Be3513F2018506AD36bC0c69c96D3DA5229617;
     address constant admin = 0xbbfA751823F04c509346d14E3ec1182405ce2Dc4;
     address constant user_m = 0x92cd1E7EC07B407027e8F667eB0C7354219f2433;
 
@@ -55,11 +55,11 @@ contract ZeroLiquidScript is Script {
         RocketDepositPoolInterface(0x6d526477284A33BF00EAE7f8F472609E88FbCE29);
     IRETH constant rETH = IRETH(0x721C80D35AB07E3823D07723615cE40df2e063b0);
     address constant sfrxETH = 0xbd127769D275133DAfaDB512d50804a916a0152E;
-    address constant unshETH = 0x74173e088D9F540F7f55CE9c61f9186cF9D62D81;
+    address constant unshETH = 0x0Ae38f7E10A43B5b2fB064B42a2f4514cbA909ef;
 
     IZeroLiquidToken constant zeroliquidtoken = IZeroLiquidToken(0x7A6f697d65B216Fad49322ec40eEeeDD02037057);
     ZeroLiquidToken constant zeroliquidtokenContract = ZeroLiquidToken(0x7A6f697d65B216Fad49322ec40eEeeDD02037057);
-    IZeroLiquid constant zeroliquid = IZeroLiquid(0x144285De31008b2a8824574655a66DC6F845343e);
+    IZeroLiquid constant zeroliquid = IZeroLiquid(0x0246e28C6B161764492E54CBF852e28A4DA2D672);
     ISteamer constant steamer = ISteamer(0xA688895C3473a2248ee48009c4FaB2E3E3054214);
     ISteamerBuffer constant steamerBuffer = ISteamerBuffer(0x1b01a636eaE19e5acBD85832743831a3E7296Bd8);
     SteamerBuffer constant steamerBufferContract = SteamerBuffer(0x1b01a636eaE19e5acBD85832743831a3E7296Bd8);
@@ -68,6 +68,8 @@ contract ZeroLiquidScript is Script {
     ITokenAdapter constant rETHAdapter = ITokenAdapter(0x39b8683b21f2D8EDd9f16DBCE709bDC9dC0cA833);
     ITokenAdapter constant sfrxETHAdapter = ITokenAdapter(0x02624021b384F43b93F81e498D8F1791232c2224);
     ITokenAdapter constant unshETHAdapter = ITokenAdapter(0x66eE014D4B461C048790b5f2AC369243Bfd88399);
+
+    IStableSwap2Pool constant cbETHPool = IStableSwap2Pool(0x5FAE7E604FC3e24fd43A72867ceBaC94c65b404A);
 
     ITransparentUpgradeableProxy constant proxy =
         ITransparentUpgradeableProxy(0x144285De31008b2a8824574655a66DC6F845343e);
@@ -80,6 +82,9 @@ contract ZeroLiquidScript is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         // proxy.upgradeTo(0xC020d5B9b40C1E21e6Ca9409ABEc2a63F40C74B2);
+        // uint256 received = cbETHPool.exchange_underlying{ value: 500_000_000_000_000 }(0, 1, 500_000_000_000_000, 0);
+        // uint256 received = cbETHPool.exchange_extended(1, 0, 570_163_877_447_847, 0, true, deployer, deployer, 0);
+        // console.log("Balance %s", received);
 
         // ############################################################################### CONFIGURATIONS ##############
 
@@ -232,7 +237,7 @@ contract ZeroLiquidScript is Script {
         // zeroliquid.repay(address(rETH), address(weth), 81_935_483_870_967_748, deployer);
 
         // LIQUIDATE
-        // zeroliquid.liquidate(unshETH, 3e17, 0);
+        zeroliquid.liquidate(unshETH, 25_000_920_117_438_685, minimumAmountOut(25_000_920_117_438_685, unshETH));
 
         // WITHDRAW wstETH
         // zeroliquid.withdraw(address(wstETH), 1e18, deployer);

@@ -34,10 +34,6 @@ struct InitializationParams {
     address frxETHCurvePool;
     uint256 ethIndexFrxETHCurvePool;
     uint256 frxETHIndexCurvePool;
-    // cbETH
-    address cbETHCurvePool;
-    uint256 ethIndexCbETHCurvePool;
-    uint256 cbETHIndexCurvePool;
     // ankrETH
     address ankrETHCurvePool;
     uint256 ethIndexAnkrETHCurvePool;
@@ -51,14 +47,14 @@ contract UnshETHAdapter is ITokenAdapter, MutexLock {
     string public override version = "1.0.0";
 
     address constant uniswapRouterV3 = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
-    address public immutable stETH = 0x2bAf823128195338F48a60FcE4D063C02c609B2b;
-    address public immutable wstETH = 0x89504631947b04d0A8808dC6be355FEC72F808cd;
-    address public immutable rETH = 0x721C80D35AB07E3823D07723615cE40df2e063b0;
-    address public immutable frxETH = 0x08dC79e672e9068EA6D8a5e89a79dE5198afba89;
-    address public immutable sfrxETH = 0xbd127769D275133DAfaDB512d50804a916a0152E;
-    address public immutable cbETH = 0x75d8E58A7eA7fB5B4af1c20C1282eA2a59a8D742;
-    address public immutable ankrETH = 0xe047Eb6a534d45b101120eC0bB0D8A353729bdC2;
-    address public immutable swETH = 0xE685f337FE386cC6094D4ecFa267d2DF63152e74;
+    address public constant stETH = 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84;
+    address public constant wstETH = 0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0;
+    address public constant rETH = 0xae78736Cd615f374D3085123A210448E74Fc6393;
+    address public constant frxETH = 0x5E8422345238F34275888049021821E8E08CAa1f;
+    address public constant sfrxETH = 0xac3E018457B222d93114458476f3E3416Abbe38F;
+    address public constant cbETH = 0xBe9895146f7AF43049ca1c1AE358B0541Ea49704;
+    address public constant ankrETH = 0xE95A203B1a91a908F9B9CE46459d101078c2c3cb;
+    address public constant swETH = 0xf951E335afb289353dc249e82926178EaC7DEd78;
 
     address public immutable override token;
     address public immutable override underlyingToken;
@@ -72,10 +68,6 @@ contract UnshETHAdapter is ITokenAdapter, MutexLock {
     address public immutable frxETHCurvePool;
     uint256 public immutable ethIndexFrxETHCurvePool;
     uint256 public immutable frxETHIndexCurvePool;
-
-    address public immutable cbETHCurvePool;
-    uint256 public immutable ethIndexCbETHCurvePool;
-    uint256 public immutable cbETHIndexCurvePool;
 
     address public immutable ankrETHCurvePool;
     uint256 public immutable ethIndexAnkrETHCurvePool;
@@ -121,21 +113,6 @@ contract UnshETHAdapter is ITokenAdapter, MutexLock {
             revert IllegalArgument("Curve pool frxETH token mismatch");
         }
 
-        cbETHCurvePool = params.cbETHCurvePool;
-        ethIndexCbETHCurvePool = params.ethIndexCbETHCurvePool;
-        cbETHIndexCurvePool = params.cbETHIndexCurvePool;
-        // Verify and make sure that the provided ETH matches the curve pool ETH.
-        if (
-            IStableSwap2Pool(params.cbETHCurvePool).coins(params.ethIndexCbETHCurvePool)
-                != 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE
-        ) {
-            revert IllegalArgument("Curve pool ETH token mismatch");
-        }
-        // Verify and make sure that the provided cbETH matches the curve pool cbETH.
-        if (IStableSwap2Pool(params.cbETHCurvePool).coins(params.cbETHIndexCurvePool) != cbETH) {
-            revert IllegalArgument("Curve pool cbETH token mismatch");
-        }
-
         ankrETHCurvePool = params.ankrETHCurvePool;
         ethIndexAnkrETHCurvePool = params.ethIndexAnkrETHCurvePool;
         ankrETHIndexCurvePool = params.ankrETHIndexCurvePool;
@@ -166,7 +143,7 @@ contract UnshETHAdapter is ITokenAdapter, MutexLock {
     receive() external payable {
         if (
             msg.sender != underlyingToken && msg.sender != rETH && msg.sender != stETHCurvePool
-                && msg.sender != frxETHCurvePool && msg.sender != cbETHCurvePool && msg.sender != ankrETHCurvePool
+                && msg.sender != frxETHCurvePool && msg.sender != ankrETHCurvePool
         ) {
             revert Unauthorized("Payments only permitted from WETH, rETH or Curve Pools");
         }
@@ -315,16 +292,20 @@ contract UnshETHAdapter is ITokenAdapter, MutexLock {
         uint256 receivedCbETH = IERC20(cbETH).balanceOf(address(this)) - startingCbETHBalance;
 
         if (receivedCbETH > 0) {
-            SafeERC20.safeApprove(cbETH, cbETHCurvePool, receivedCbETH);
+            SafeERC20.safeApprove(cbETH, uniswapRouterV3, receivedCbETH);
 
-            uint256 receivedETHFromCbETH = IStableSwap2Pool(cbETHCurvePool).exchange(
-                int128(uint128(cbETHIndexCurvePool)), // cbETH Pool index
-                int128(uint128(ethIndexCbETHCurvePool)), // ETH pool index
-                receivedCbETH,
-                0 // <- Slippage is handled upstream
-            );
+            ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
+                tokenIn: cbETH,
+                tokenOut: underlyingToken,
+                fee: 500,
+                recipient: address(this),
+                deadline: block.timestamp,
+                amountIn: receivedCbETH,
+                amountOutMinimum: 0,
+                sqrtPriceLimitX96: 0
+            });
 
-            IWETH9(underlyingToken).deposit{ value: receivedETHFromCbETH }();
+            uint256 receivedETHFromCbETH = ISwapRouter(uniswapRouterV3).exactInputSingle(params);
 
             return receivedETHFromCbETH;
         } else {
