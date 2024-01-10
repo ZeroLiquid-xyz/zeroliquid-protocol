@@ -33,7 +33,8 @@ interface IAggregationRouterV5 {
 
 /// @title  ZeroLiquidSwap
 /// @author ZeroLiquid
-/// @notice Facilities depositing into ZeroLiquid by swapping altcoins/ETH on 1inch aggregator
+/// @notice Used incase of depositing into ZeroLiquid using unsupported yield token.
+/// Facilities depositing into ZeroLiquid by swapping altcoins/ETH on 1inch aggregator
 /// for supported yield tokens & also facilities swapping of minted debt token to desired altcoins/ETH
 contract ZeroLiquidSwap {
     address public immutable zeroliquid;
