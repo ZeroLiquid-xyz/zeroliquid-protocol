@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import { SafeERC20 } from "./libraries/SafeERC20.sol";
 
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import "./base/ErrorMessages.sol";
 
 interface IZeroLiquid {
     function deposit(address yieldToken, uint256 amount, address recipient) external returns (uint256 sharesIssued);
