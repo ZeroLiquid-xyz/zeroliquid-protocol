@@ -80,7 +80,7 @@ contract ZeroLiquidScript is Script {
     // IChainlinkOracle constant oracleStethUsd = IChainlinkOracle(0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e);
 
     function run() external {
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_DEPLOYER");
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_ZERO_SWAP_TEST");
         vm.startBroadcast(deployerPrivateKey);
 
         // proxy.upgradeTo(0xC020d5B9b40C1E21e6Ca9409ABEc2a63F40C74B2);
