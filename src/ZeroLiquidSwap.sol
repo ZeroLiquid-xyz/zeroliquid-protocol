@@ -10,6 +10,10 @@ interface IZeroLiquid {
     function mintFrom(address owner, uint256 amount, address recipient) external;
 }
 
+interface IStableSwap {
+    function exchange(int128 i, int128 j, uint256 dx, uint256 minimumDy) external returns (uint256);
+}
+
 interface IAggregationRouterV5 {
     struct SwapDescription {
         address srcToken;
@@ -41,11 +45,25 @@ contract ZeroLiquidSwap {
     address public immutable debtToken;
     // 1inch AggregationRouterV5 address
     address public immutable swapRouter;
+    // zETH curve pool address
+    address public immutable stableSwap;
+    int128 public immutable wethPoolIndex;
+    int128 public immutable zethPoolIndex;
 
-    constructor(address _zeroliquid, address _debtToken, address _swapRouter) {
+    constructor(
+        address _zeroliquid,
+        address _debtToken,
+        address _swapRouter,
+        address _stableSwap,
+        int128 _wethPoolIndex,
+        int128 _zethPoolIndex
+    ) {
         zeroliquid = _zeroliquid;
         debtToken = _debtToken;
         swapRouter = _swapRouter;
+        stableSwap = _stableSwap;
+        wethPoolIndex = _wethPoolIndex;
+        zethPoolIndex = _zethPoolIndex;
     }
 
     /// @notice Swaps altcoin or ETH to supported yield token and deposits it into zeroliquid.
@@ -94,12 +112,14 @@ contract ZeroLiquidSwap {
     /// @notice Requires minting approval by calling "approveMint" function of ZeroLiquid.
     ///
     /// @param debtAmount Amount of debt user want to mint.
+    /// @param minDebtExchangeAmount Minimum amount of weth user gets for exchanging debt token
     /// @param executor Aggregation executor that executes calls described in `data`.
     /// @param desc Swap description.
     /// @param permit Should contain valid permit that can be used in `IERC20Permit.permit` calls.
     /// @param data Encoded calls that `caller` should execute in between of swaps.
     function swap(
         uint256 debtAmount,
+        uint256 minDebtExchangeAmount,
         address executor,
         IAggregationRouterV5.SwapDescription calldata desc,
         bytes calldata permit,
@@ -109,8 +129,11 @@ contract ZeroLiquidSwap {
     {
         IZeroLiquid(zeroliquid).mintFrom(msg.sender, debtAmount, address(this));
 
+        SafeERC20.safeApprove(debtToken, stableSwap, debtAmount);
+        IStableSwap(stableSwap).exchange(zethPoolIndex, wethPoolIndex, debtAmount, minDebtExchangeAmount);
+
         // Give approval to 1inch's AggregationRouterV5
-        SafeERC20.safeApprove(debtToken, swapRouter, debtAmount);
+        SafeERC20.safeApprove(desc.srcToken, swapRouter, desc.amount);
         IAggregationRouterV5(swapRouter).swap{ value: 0 }(executor, desc, permit, data);
     }
 }
