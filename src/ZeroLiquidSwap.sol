@@ -106,7 +106,8 @@ contract ZeroLiquidSwap {
         }
     }
 
-    /// @notice Mints debt token from zeroliquid & swaps them to the desired token described in swap description.
+    /// @notice Mints debt token from zeroliquid & swaps them first on curve for WETH & then
+    /// to the desired token described in swap description using 1inch.
     /// Uses 1inch AggregationRouterV5's swap() function for swapping
     ///
     /// @notice Requires minting approval by calling "approveMint" function of ZeroLiquid.
