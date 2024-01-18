@@ -122,7 +122,9 @@ contract ZeroLiquidSwap {
     ///
     /// @param amount Amount of debt token to swap
     /// @param minimumAmountOut Minimum amount of received token i.e. WETH
-    function swap(uint256 amount, uint256 minimumAmountOut) external {
+    ///
+    /// @return receivedWETH Amount of ETH returned
+    function swap(uint256 amount, uint256 minimumAmountOut) external returns (uint256) {
         SafeERC20.safeTransferFrom(debtToken, msg.sender, address(this), amount);
 
         SafeERC20.safeApprove(debtToken, stableSwap, amount);
@@ -130,5 +132,7 @@ contract ZeroLiquidSwap {
 
         WETH.withdraw(receivedWETH);
         payable(msg.sender).transfer(receivedWETH);
+
+        return receivedWETH;
     }
 }
