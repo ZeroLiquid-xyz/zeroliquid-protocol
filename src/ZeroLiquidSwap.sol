@@ -5,6 +5,10 @@ import { SafeERC20 } from "./libraries/SafeERC20.sol";
 
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
+import { IWETH9 } from "./interfaces/external/IWETH9.sol";
+
+import { Unauthorized } from "./base/ErrorMessages.sol";
+
 interface IZeroLiquid {
     function deposit(address yieldToken, uint256 amount, address recipient) external returns (uint256 sharesIssued);
     function mintFrom(address owner, uint256 amount, address recipient) external;
@@ -41,11 +45,12 @@ interface IAggregationRouterV5 {
 /// Facilities depositing into ZeroLiquid by swapping altcoins/ETH on 1inch aggregator
 /// for supported yield tokens & also facilities swapping of minted debt token to desired altcoins/ETH
 contract ZeroLiquidSwap {
+    IWETH9 public constant WETH = IWETH9(0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6);
     address public immutable zeroliquid;
     address public immutable debtToken;
     // 1inch AggregationRouterV5 address
     address public immutable swapRouter;
-    // zETH curve pool address
+    // zETH/WETH curve pool address
     address public immutable stableSwap;
     int128 public immutable wethPoolIndex;
     int128 public immutable zethPoolIndex;
@@ -64,6 +69,12 @@ contract ZeroLiquidSwap {
         stableSwap = _stableSwap;
         wethPoolIndex = _wethPoolIndex;
         zethPoolIndex = _zethPoolIndex;
+    }
+
+    receive() external payable {
+        if (msg.sender != address(WETH)) {
+            revert Unauthorized("Payments only permitted from WETH");
+        }
     }
 
     /// @notice Swaps altcoin or ETH to supported yield token and deposits it into zeroliquid.
@@ -106,35 +117,18 @@ contract ZeroLiquidSwap {
         }
     }
 
-    /// @notice Mints debt token from zeroliquid & swaps them first on curve for WETH & then
-    /// to the desired token described in swap description using 1inch.
-    /// Uses 1inch AggregationRouterV5's swap() function for swapping
+    /// @notice Swaps debt token on curve for WETH, unwraps it send it to the owner
+    /// @notice Requires debt token's approval
     ///
-    /// @notice Requires minting approval by calling "approveMint" function of ZeroLiquid.
-    ///
-    /// @param debtAmount Amount of debt user want to mint.
-    /// @param minDebtExchangeAmount Minimum amount of weth user gets for exchanging debt token
-    /// @param executor Aggregation executor that executes calls described in `data`.
-    /// @param desc Swap description.
-    /// @param permit Should contain valid permit that can be used in `IERC20Permit.permit` calls.
-    /// @param data Encoded calls that `caller` should execute in between of swaps.
-    function swap(
-        uint256 debtAmount,
-        uint256 minDebtExchangeAmount,
-        address executor,
-        IAggregationRouterV5.SwapDescription calldata desc,
-        bytes calldata permit,
-        bytes calldata data
-    )
-        external
-    {
-        IZeroLiquid(zeroliquid).mintFrom(msg.sender, debtAmount, address(this));
+    /// @param amount Amount of debt token to swap
+    /// @param minimumAmountOut Minimum amount of received token i.e. WETH
+    function swap(uint256 amount, uint256 minimumAmountOut) external {
+        SafeERC20.safeTransferFrom(debtToken, msg.sender, address(this), amount);
 
-        SafeERC20.safeApprove(debtToken, stableSwap, debtAmount);
-        IStableSwap(stableSwap).exchange(zethPoolIndex, wethPoolIndex, debtAmount, minDebtExchangeAmount);
+        SafeERC20.safeApprove(debtToken, stableSwap, amount);
+        uint256 receivedWETH = IStableSwap(stableSwap).exchange(zethPoolIndex, wethPoolIndex, amount, minimumAmountOut);
 
-        // Give approval to 1inch's AggregationRouterV5
-        SafeERC20.safeApprove(desc.srcToken, swapRouter, desc.amount);
-        IAggregationRouterV5(swapRouter).swap{ value: 0 }(executor, desc, permit, data);
+        WETH.withdraw(receivedWETH);
+        payable(msg.sender).transfer(receivedWETH);
     }
 }
