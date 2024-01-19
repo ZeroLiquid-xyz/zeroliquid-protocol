@@ -7,7 +7,7 @@ import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol"
 
 import { IWETH9 } from "./interfaces/external/IWETH9.sol";
 
-import { Unauthorized } from "./base/ErrorMessages.sol";
+import { Unauthorized, IllegalState } from "./base/ErrorMessages.sol";
 
 interface IZeroLiquid {
     function deposit(address yieldToken, uint256 amount, address recipient) external returns (uint256 sharesIssued);
@@ -131,7 +131,11 @@ contract ZeroLiquidSwap {
         uint256 receivedWETH = IStableSwap(stableSwap).exchange(zethPoolIndex, wethPoolIndex, amount, minimumAmountOut);
 
         WETH.withdraw(receivedWETH);
-        payable(msg.sender).transfer(receivedWETH);
+
+        (bool success,) = payable(msg.sender).call{ value: receivedWETH }("");
+        if (!success) {
+            revert IllegalState("Unsuccessful Transfer");
+        }
 
         return receivedWETH;
     }
