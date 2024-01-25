@@ -37,23 +37,6 @@ interface IZeroLiquid {
     function deposit(address yieldToken, uint256 amount, address recipient) external returns (uint256 sharesIssued);
 }
 
-/// @title  IStableSwap
-/// @author Curve Finance
-interface IStableSwap {
-    // Gets the address of the token specified by `index` param on curve pool contract
-    function coins(uint256 index) external view returns (address);
-
-    /// @notice Performs an exchange on curve pool contract
-    ///
-    /// @notice Requires approval of the token to be exchanged
-    ///
-    /// @param i Index specifing the sold token on curve pool contract
-    /// @param j Index specifing the bought token on curve pool contract
-    /// @param dx Amount of token to be exchanged
-    /// @param minimumDy Minimum amount of bought token to be received
-    function exchange(int128 i, int128 j, uint256 dx, uint256 minimumDy) external returns (uint256);
-}
-
 /// @title  IAggregationRouterV5
 /// @author 1inch Aggregator
 interface IAggregationRouterV5 {
@@ -96,10 +79,6 @@ contract ZeroLiquidSwap {
     address public immutable debtToken;
     // 1inch AggregationRouterV5 address
     address public immutable swapRouter;
-    // zETH/WETH curve pool address
-    address public immutable stableSwap;
-    uint256 public immutable wethPoolIndex;
-    uint256 public immutable zethPoolIndex;
 
     /// @notice Emits when a user swaps amount of `srcToken` specified by `srcAmount` to `dstToken` & deposits the
     /// `dstAmount` to `recipient`.
@@ -121,43 +100,14 @@ contract ZeroLiquidSwap {
         address recipient
     );
 
-    constructor(
-        address _zeroliquid,
-        address _debtToken,
-        address _swapRouter,
-        address _stableSwap,
-        uint256 _wethPoolIndex,
-        uint256 _zethPoolIndex
-    ) {
-        if (
-            _zeroliquid == address(0) || _debtToken == address(0) || _swapRouter == address(0)
-                || _stableSwap == address(0)
-        ) {
+    constructor(address _zeroliquid, address _debtToken, address _swapRouter) {
+        if (_zeroliquid == address(0) || _debtToken == address(0) || _swapRouter == address(0)) {
             revert IllegalArgument("Invalid Contract Address");
-        }
-
-        // Verify and make sure that the provided WETH index matches the curve pool WETH.
-        if (IStableSwap(_stableSwap).coins(_wethPoolIndex) != address(WETH)) {
-            revert IllegalArgument("Curve pool WETH token mismatch");
-        }
-
-        // Verify and make sure that the provided zETH index matches the curve pool zETH.
-        if (IStableSwap(_stableSwap).coins(_zethPoolIndex) != _debtToken) {
-            revert IllegalArgument("Curve pool zETH token mismatch");
         }
 
         zeroliquid = _zeroliquid;
         debtToken = _debtToken;
         swapRouter = _swapRouter;
-        stableSwap = _stableSwap;
-        wethPoolIndex = _wethPoolIndex;
-        zethPoolIndex = _zethPoolIndex;
-    }
-
-    receive() external payable {
-        if (IWETH9(msg.sender) != WETH) {
-            revert Unauthorized("Payments only permitted from WETH");
-        }
     }
 
     /// @notice Swaps altcoin or ETH to supported yield token and deposits it into zeroliquid.
@@ -203,30 +153,5 @@ contract ZeroLiquidSwap {
         }
 
         emit Deposit(msg.sender, desc.srcToken, desc.dstToken, desc.amount, receivedAmount, recipient);
-    }
-
-    /// @notice Swaps debt token on curve for WETH, unwraps it send it to the owner
-    /// @notice Requires debt token's approval
-    ///
-    /// @param amount Amount of debt token to swap
-    /// @param minimumAmountOut Minimum amount of received token i.e. WETH
-    ///
-    /// @return receivedWETH Amount of ETH returned
-    function swap(uint256 amount, uint256 minimumAmountOut) external returns (uint256) {
-        SafeERC20.safeTransferFrom(debtToken, msg.sender, address(this), amount);
-
-        SafeERC20.safeApprove(debtToken, stableSwap, amount);
-        uint256 receivedWETH = IStableSwap(stableSwap).exchange(
-            int128(uint128(zethPoolIndex)), int128(uint128(wethPoolIndex)), amount, minimumAmountOut
-        );
-
-        WETH.withdraw(receivedWETH);
-
-        (bool success,) = msg.sender.call{ value: receivedWETH }(new bytes(0));
-        if (!success) {
-            revert IllegalState("Unsuccessful Transfer");
-        }
-
-        return receivedWETH;
     }
 }
