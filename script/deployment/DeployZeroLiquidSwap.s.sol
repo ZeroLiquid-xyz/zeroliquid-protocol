@@ -14,7 +14,7 @@ contract Deployment is Script {
 
         // zeroliquid, debtToken, swapRouter, stableSwap, wethPoolIndex, zethPoolIndex
         swap =
-        new ZeroLiquidSwap(0x144285De31008b2a8824574655a66DC6F845343e, 0x7A6f697d65B216Fad49322ec40eEeeDD02037057, 0xE6A7D7024e3a1EBec0f7EFa74F7175526e352bBE, 0x1d95d033909EAd5BfE22715a3F24CE6D62aD9db5, 0, 1);
+        new ZeroLiquidSwap(0x0246e28C6B161764492E54CBF852e28A4DA2D672, 0x776280F68aD33c4d49e6846507B7dBaf7811c89F, 0x1111111254EEB25477B68fb85Ed929f73A960582);
 
         vm.stopBroadcast();
     }

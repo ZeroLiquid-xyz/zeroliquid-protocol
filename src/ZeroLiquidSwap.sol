@@ -74,7 +74,7 @@ interface IAggregationRouterV5 {
 /// Facilities depositing into ZeroLiquid by swapping altcoins/ETH on 1inch aggregator
 /// for supported yield tokens.
 contract ZeroLiquidSwap {
-    IWETH9 public constant WETH = IWETH9(0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6);
+    IWETH9 public constant WETH = IWETH9(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
     address public immutable zeroliquid;
     address public immutable debtToken;
     // 1inch AggregationRouterV5 address
